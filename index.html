@@ -16,22 +16,16 @@ body{
 
 h1{color:gold}
 
-.grid{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:10px;
-  padding:10px;
-}
-
 .card{
   background:#111;
+  margin:10px;
+  padding:10px;
   border:1px solid gold;
-  padding:15px;
   border-radius:10px;
 }
 
 button{
-  width:90%;
+  width:80%;
   padding:10px;
   margin:5px;
   border:none;
@@ -49,7 +43,6 @@ button:active{
   background:gold;
   color:black;
   font-size:18px;
-  width:90%;
 }
 </style>
 </head>
@@ -58,52 +51,27 @@ button:active{
 
 <h1>🎮 اختر الفئات</h1>
 
-<div class="grid">
-
 <div class="card">
-الكويت 🇰🇼
-<button onclick="pick('kuwait')">اختيار</button>
+<button onclick="add('kuwait')">🇰🇼 الكويت</button>
+<button onclick="add('general')">🌍 معلومات عامة</button>
+<button onclick="add('media')">📺 إعلام</button>
+<button onclick="add('football')">⚽ كرة قدم</button>
+<button onclick="add('arabi')">🟢 العربي</button>
+<button onclick="add('qadsia')">🟡 القادسية</button>
 </div>
 
-<div class="card">
-معلومات عامة 🌍
-<button onclick="pick('general')">اختيار</button>
-</div>
-
-<div class="card">
-إعلام 📺
-<button onclick="pick('media')">اختيار</button>
-</div>
-
-<div class="card">
-كرة قدم كويتية ⚽
-<button onclick="pick('football')">اختيار</button>
-</div>
-
-<div class="card">
-نادي العربي 🟢
-<button onclick="pick('arabi')">اختيار</button>
-</div>
-
-<div class="card">
-نادي القادسية 🟡
-<button onclick="pick('qadsia')">اختيار</button>
-</div>
-
-</div>
-
-<button class="start" onclick="go()">▶ بدء اللعب</button>
+<button class="start" onclick="go()">▶ لعب</button>
 
 <script>
 let cats=[];
 
-function pick(c){
+function add(c){
   if(!cats.includes(c)) cats.push(c);
 }
 
 function go(){
-  if(cats.length<1){
-    alert("اختر فئة واحدة على الأقل");
+  if(cats.length===0){
+    alert("اختر فئة");
     return;
   }
   localStorage.setItem("cats",JSON.stringify(cats));
