@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>اقعد - اللعبة</title>
+<title>اقعد</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -44,8 +44,8 @@ body{
 
 button{
   width:80%;
-  margin:5px;
   padding:10px;
+  margin:5px;
   border-radius:8px;
   border:none;
   background:#222;
@@ -110,15 +110,15 @@ kuwait:{
 general:{
 200:{q:"كم كوكب؟",a:["8","9","7"],c:0},
 400:{q:"أكبر قارة؟",a:["آسيا","أوروبا","أفريقيا"],c:0},
-600:{q:"أطول نهر؟",a:["النيل","دجلة","الفرات"],c:0}
+600:{q:"أطول نهر؟",a:["النيل","دجلة","الأمازون"],c:2}
 },
-media:{
-200:{q:"الإعلام يعني؟",a:["صحافة","طب","هندسة"],c:0},
-400:{q:"TV اختصار؟",a:["تلفزيون","كمبيوتر","هاتف"],c:0},
-600:{q:"الصحف؟",a:["وسائل إعلام","رياضة","طب"],c:0}
+flags:{   // 🏳️ أعلام دول
+200:{q:"علم فرنسا لونه؟",a:["أزرق/أبيض/أحمر","أخضر/أبيض","أسود"],c:0},
+400:{q:"علم اليابان فيه؟",a:["شمس حمراء","نجمة","هلال"],c:0},
+600:{q:"علم الكويت فيه؟",a:["أخضر/أبيض/أحمر","أزرق","بنفسجي"],c:0}
 },
 football:{
-200:{q:"عدد اللاعبين؟",a:["11","10","9"],c:0},
+200:{q:"كم لاعب؟",a:["11","10","9"],c:0},
 400:{q:"بطولة الكويت؟",a:["الدوري","كأس العالم","يويفا"],c:0},
 600:{q:"أفضل نادي؟",a:["الكويت","العربي","كلهم"],c:0}
 },
@@ -152,9 +152,7 @@ function pick(points){
   q.a.forEach((x,i)=>{
     let b=document.createElement("button");
     b.innerText=x;
-
     b.onclick=()=>check(i);
-
     box.appendChild(b);
   });
 }
@@ -164,7 +162,7 @@ function check(i){
 
   let box=document.getElementById("answerBox");
 
-  box.innerHTML="الإجابة الصحيحة: "+q.a[q.c];
+  box.innerHTML="✔ الإجابة الصحيحة: "+q.a[q.c];
 
   let btnA=document.createElement("button");
   btnA.innerText="Team A صح";
