@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>اقعد</title>
+<title>اقعد TV</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -12,6 +12,7 @@ body{
   background:#000814;
   color:white;
   text-align:center;
+  overflow:hidden;
 }
 
 .header{
@@ -19,27 +20,35 @@ body{
   color:black;
   padding:10px;
   font-weight:bold;
+  font-size:20px;
 }
 
-/* الفئات المختارة */
-.selectedCats{
-  background:#111;
+.score{
+  display:flex;
+  justify-content:space-around;
   padding:10px;
-  color:gold;
+}
+
+.box{
+  background:#111;
+  border:1px solid gold;
+  padding:10px;
+  width:40%;
 }
 
 /* اللوحة */
 .board{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(4,1fr);
   gap:6px;
   padding:10px;
 }
 
-.catTitle{
+.cat{
   background:#111;
   border:1px solid gold;
   padding:8px;
+  color:gold;
   font-weight:bold;
 }
 
@@ -56,14 +65,14 @@ body{
   pointer-events:none;
 }
 
-/* السؤال */
+/* شاشة السؤال */
 .screen{
-  display:none;
   position:fixed;
-  top:0; left:0;
+  top:0;left:0;
   width:100%;
   height:100%;
-  background:#000;
+  background:rgba(0,0,0,0.95);
+  display:none;
   padding:20px;
 }
 
@@ -73,43 +82,14 @@ body{
   font-size:22px;
 }
 
-button{
-  width:80%;
-  padding:10px;
-  margin:5px;
-  border:none;
-  border-radius:8px;
-  background:#222;
-  color:white;
-}
-
-button:active{
-  background:gold;
-  color:black;
-}
-
-/* النتيجة */
-.score{
-  display:flex;
-  justify-content:space-around;
-  padding:10px;
-}
-
-.box{
-  background:#111;
-  border:1px solid gold;
-  padding:10px;
-  width:40%;
-}
-
-/* الفوز */
+/* فوز */
 .win{
-  display:none;
   position:fixed;
   top:0;left:0;
   width:100%;
   height:100%;
   background:black;
+  display:none;
   align-items:center;
   justify-content:center;
   flex-direction:column;
@@ -118,15 +98,27 @@ button:active{
 .win h1{
   color:gold;
   font-size:40px;
+  animation:pop 1s infinite alternate;
+}
+
+@keyframes pop{
+  from{transform:scale(1);}
+  to{transform:scale(1.1);}
+}
+
+/* كونفيتي */
+.confetti{
+  position:fixed;
+  width:100%;
+  height:100%;
+  pointer-events:none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">🎮 اقعد</div>
-
-<div class="selectedCats" id="catsList"></div>
+<div class="header">📺 اقعد TV</div>
 
 <div class="score">
   <div class="box">A: <span id="a">0</span></div>
@@ -136,11 +128,9 @@ button:active{
 <div class="board" id="board"></div>
 
 <div class="screen" id="screen">
-
   <div class="q" id="q"></div>
   <div id="answers"></div>
   <div id="result"></div>
-
 </div>
 
 <div class="win" id="win">
@@ -148,17 +138,28 @@ button:active{
   <button onclick="location.reload()">إعادة اللعب</button>
 </div>
 
-<script>
+<canvas class="confetti" id="confetti"></canvas>
 
-let cats = JSON.parse(localStorage.getItem("cats")||"[]");
+<script>
 
 let a=0,b=0;
 let turn="A";
 let used={};
 let currentCorrect=0;
+const WIN=5;
 
-const WIN=5; // الفوز عند 5 نقاط
+/* 🔊 صوت */
+function sound(type){
+  let ctx=new (window.AudioContext||window.webkitAudioContext)();
+  let o=ctx.createOscillator();
+  o.type="sine";
+  o.frequency.value = type==="win"?800:300;
+  o.connect(ctx.destination);
+  o.start();
+  setTimeout(()=>o.stop(),150);
+}
 
+/* البيانات */
 const Q = {
 kuwait:{
 200:{q:"عاصمة الكويت؟",a:["الكويت","دبي","الدوحة"],c:0},
@@ -169,31 +170,20 @@ general:{
 400:{q:"أكبر قارة؟",a:["آسيا","أوروبا","أفريقيا"],c:0}
 },
 flags:{
-200:{q:"علم اليابان؟",a:["شمس حمراء","نجمة","هلال"],c:0},
+200:{q:"علم اليابان؟",a:["شمس","نجمة","هلال"],c:0},
 400:{q:"علم فرنسا؟",a:["أزرق أبيض أحمر","أخضر","أسود"],c:0}
-},
-islam:{
-200:{q:"كم عدد أجزاء القرآن؟",a:["30","20","114"],c:0},
-400:{q:"سورة الفاتحة كم آية؟",a:["7","5","10"],c:0}
 }
 };
 
-function showCats(){
-  document.getElementById("catsList").innerText =
-  "الفئات: " + cats.join(" | ");
-}
-
+/* بناء اللوحة */
 function build(){
-
   let board=document.getElementById("board");
   board.innerHTML="";
 
   for(let cat in Q){
 
-    if(!cats.includes(cat)) continue;
-
     let t=document.createElement("div");
-    t.className="catTitle";
+    t.className="cat";
     t.innerText=cat;
     board.appendChild(t);
 
@@ -214,6 +204,7 @@ function build(){
   }
 }
 
+/* فتح السؤال */
 function open(cat,p,key){
 
   if(used[key]) return;
@@ -223,7 +214,7 @@ function open(cat,p,key){
   currentCorrect=qObj.c;
 
   document.getElementById("screen").style.display="block";
-  document.getElementById("q").innerText="Team "+turn+": "+qObj.q;
+  document.getElementById("q").innerText="Team "+turn+" : "+qObj.q;
 
   let box=document.getElementById("answers");
   box.innerHTML="";
@@ -239,6 +230,7 @@ function open(cat,p,key){
   build();
 }
 
+/* التحقق */
 function check(i,qObj){
 
   document.getElementById("result").innerHTML=
@@ -247,18 +239,17 @@ function check(i,qObj){
   let aBtn=document.createElement("button");
   let bBtn=document.createElement("button");
 
-  aBtn.innerText="A صحيح";
-  bBtn.innerText="B صحيح";
+  aBtn.innerText="Team A";
+  bBtn.innerText="Team B";
 
   aBtn.onclick=()=>give("A",i===currentCorrect);
   bBtn.onclick=()=>give("B",i===currentCorrect);
-
-  document.getElementById("result").appendChild(document.createElement("br"));
-  document.getElementById("result").appendChild(aBtn);
-  document.getElementById("result").appendChild(bBtn);
 }
 
+/* إعطاء النقاط */
 function give(team,correct){
+
+  sound(correct?"win":"");
 
   if(correct){
     if(team==="A")a++;
@@ -280,15 +271,54 @@ function give(team,correct){
   build();
 }
 
+/* الفوز */
 function end(){
+
+  sound("win");
 
   let w = (a>b) ? "🏆 Team A فاز!" : "🏆 Team B فاز!";
 
   document.getElementById("winner").innerText=w;
   document.getElementById("win").style.display="flex";
+
+  confetti();
 }
 
-showCats();
+/* كونفيتي بسيط */
+function confetti(){
+  let c=document.getElementById("confetti");
+  let ctx=c.getContext("2d");
+  c.width=window.innerWidth;
+  c.height=window.innerHeight;
+
+  let pieces=[];
+
+  for(let i=0;i<100;i++){
+    pieces.push({
+      x:Math.random()*c.width,
+      y:Math.random()*c.height,
+      r:Math.random()*6
+    });
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.fillStyle="gold";
+
+    pieces.forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fill();
+      p.y+=2;
+      if(p.y>c.height)p.y=0;
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+}
+
 build();
 
 </script>
