@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>سين جيم - Seen Jeem</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #111;
+  color: white;
+  text-align: center;
+}
+
+h1 {
+  margin: 10px;
+}
+
+.card {
+  background: #222;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 15px;
+}
+
+button {
+  padding: 15px;
+  margin: 8px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+.answer {
+  display: block;
+  width: 80%;
+  margin: 10px auto;
+  background: #333;
+  color: white;
+}
+
+.answer:hover {
+  background: #555;
+}
+
+#nextBtn {
+  background: gold;
+  color: black;
+  display: none;
+}
+
+.teamBox {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 10px;
+}
+
+.team {
+  background: #333;
+  padding: 10px;
+  border-radius: 10px;
+  width: 40%;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🇰🇼 سين جيم - Seen Jeem</h1>
+
+<div class="teamBox">
+  <div class="team">Team A: <span id="scoreA">0</span></div>
+  <div class="team">Team B: <span id="scoreB">0</span></div>
+</div>
+
+<div class="card">
+  <h2 id="category">Category</h2>
+  <h3 id="question">Question</h3>
+
+  <div id="answers"></div>
+
+  <button id="nextBtn" onclick="nextQuestion()">Next Question</button>
+</div>
+
+<script>
+let scoreA = 0;
+let scoreB = 0;
+let turn = "A";
+
+const questions = [
+  {
+    category: "🇰🇼 Kuwait",
+    q: "What is the capital of Kuwait?",
+    a: ["Hawalli", "Kuwait City", "Jahra", "Salmiya"],
+    correct: 1
+  },
+  {
+    category: "⚽ Sports",
+    q: "How many players in a football team?",
+    a: ["9", "10", "11", "12"],
+    correct: 2
+  },
+  {
+    category: "🌍 General",
+    q: "What planet do we live on?",
+    a: ["Mars", "Venus", "Earth", "Jupiter"],
+    correct: 2
+  },
+  {
+    category: "🕌 Islam",
+    q: "How many daily prayers in Islam?",
+    a: ["3", "5", "7", "4"],
+    correct: 1
+  }
+];
+
+let current = 0;
+
+function loadQuestion() {
+  document.getElementById("nextBtn").style.display = "none";
+
+  let q = questions[current];
+
+  document.getElementById("category").innerText = q.category;
+  document.getElementById("question").innerText = "Team " + turn + ": " + q.q;
+
+  let answersDiv = document.getElementById("answers");
+  answersDiv.innerHTML = "";
+
+  q.a.forEach((ans, i) => {
+    let btn = document.createElement("button");
+    btn.className = "answer";
+    btn.innerText = ans;
+
+    btn.onclick = () => checkAnswer(i);
+    answersDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(i) {
+  let q = questions[current];
+
+  if (i === q.correct) {
+    if (turn === "A") scoreA++;
+    else scoreB++;
+  }
+
+  document.getElementById("scoreA").innerText = scoreA;
+  document.getElementById("scoreB").innerText = scoreB;
+
+  document.getElementById("nextBtn").style.display = "block";
+}
+
+function nextQuestion() {
+  current++;
+
+  if (current >= questions.length) {
+    endGame();
+    return;
+  }
+
+  turn = turn === "A" ? "B" : "A";
+  loadQuestion();
+}
+
+function endGame() {
+  document.getElementById("category").innerText = "Game Finished 🎉";
+
+  let winner =
+    scoreA > scoreB ? "Team A Wins 🏆" :
+    scoreB > scoreA ? "Team B Wins 🏆" :
+    "Draw 🤝";
+
+  document.getElementById("question").innerText = winner;
+  document.getElementById("answers").innerHTML = "";
+  document.getElementById("nextBtn").style.display = "none";
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
