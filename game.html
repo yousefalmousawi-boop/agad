@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>اقعد</title>
+<title>اقعد - اللعبة</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -21,20 +21,6 @@ body{
   font-weight:bold;
 }
 
-.score{
-  display:flex;
-  justify-content:space-around;
-  margin:10px;
-}
-
-.box{
-  background:#111;
-  border:1px solid gold;
-  padding:10px;
-  width:40%;
-  border-radius:10px;
-}
-
 .panel{
   margin:10px;
   padding:10px;
@@ -46,13 +32,22 @@ button{
   width:80%;
   padding:10px;
   margin:5px;
-  border-radius:8px;
   border:none;
+  border-radius:8px;
   background:#222;
   color:white;
 }
 
 button:active{
+  background:gold;
+  color:black;
+}
+
+.catBtn{
+  background:#333;
+}
+
+.catBtn.active{
   background:gold;
   color:black;
 }
@@ -68,14 +63,11 @@ button:active{
 
 <div class="header">🎮 اقعد - يوسف البطل</div>
 
-<div class="score">
-  <div class="box">A<br><span id="a">0</span></div>
-  <div class="box">B<br><span id="b">0</span></div>
-</div>
-
 <div class="panel">
 
-<div id="cat"></div>
+<h3>اختر فئة قبل السؤال</h3>
+<div id="cats"></div>
+
 <div id="q"></div>
 
 <div id="answers"></div>
@@ -88,49 +80,68 @@ button:active{
 
 let cats = JSON.parse(localStorage.getItem("cats")||"[]");
 
-let a=0,b=0;
-let turn="A";
-
 let currentCat="";
 let currentQ=null;
+
+let a=0,b=0;
+let turn="A";
 
 const Q = {
 kuwait:[
 {q:"عاصمة الكويت؟",a:["الكويت","دبي","الدوحة"],c:0},
-{q:"أشهر ميناء؟",a:["الشويخ","جدة","بيروت"],c:0}
+{q:"أشهر برج؟",a:["التحرير","برج خليفة","إيفل"],c:0}
 ],
 general:[
 {q:"كم كوكب؟",a:["8","9","7"],c:0},
 {q:"أكبر قارة؟",a:["آسيا","أوروبا","أفريقيا"],c:0}
 ],
 flags:[
-{q:"علم فرنسا؟",a:["أزرق/أبيض/أحمر","أخضر","أسود"],c:0},
-{q:"علم اليابان؟",a:["شمس حمراء","نجمة","هلال"],c:0}
+{q:"علم اليابان؟",a:["شمس حمراء","نجمة","هلال"],c:0},
+{q:"علم فرنسا؟",a:["أزرق/أبيض/أحمر","أخضر","أسود"],c:0}
 ],
-football:[
-{q:"كم لاعب؟",a:["11","10","9"],c:0}
+quran:[
+{q:"كم سورة في القرآن؟",a:["114","100","120"],c:0},
+{q:"أول سورة؟",a:["الفاتحة","البقرة","الإخلاص"],c:0}
 ],
-arabi:[
-{q:"لون النادي؟",a:["أخضر","أحمر","أزرق"],c:0}
+culture:[
+{q:"عاصمة فرنسا؟",a:["باريس","روما","مدريد"],c:0},
+{q:"أكبر دولة؟",a:["روسيا","كندا","الصين"],c:0}
 ],
-qadsia:[
-{q:"لون القادسية؟",a:["أصفر","أخضر","أزرق"],c:0}
+media:[
+{q:"TV اختصار؟",a:["تلفزيون","هاتف","راديو"],c:0},
+{q:"وسائل الإعلام؟",a:["صحف","أكل","رياضة"],c:0}
 ]
 };
 
-function pick(){
+function renderCats(){
+  let box=document.getElementById("cats");
+  box.innerHTML="";
 
-  currentCat = cats[Math.floor(Math.random()*cats.length)];
+  cats.forEach(c=>{
+    let b=document.createElement("button");
+    b.className="catBtn";
+    b.innerText=c;
 
-  let arr = Q[currentCat];
+    b.onclick=()=>{
+      document.querySelectorAll(".catBtn").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      startQ(c);
+    };
+
+    box.appendChild(b);
+  });
+}
+
+function startQ(cat){
+
+  currentCat = cat;
+  let arr = Q[cat];
   currentQ = arr[Math.floor(Math.random()*arr.length)];
 
-  document.getElementById("cat").innerText=currentCat;
   document.getElementById("q").innerText="Team "+turn+": "+currentQ.q;
 
   let box=document.getElementById("answers");
   box.innerHTML="";
-
   document.getElementById("answerBox").innerHTML="";
 
   currentQ.a.forEach((x,i)=>{
@@ -150,8 +161,8 @@ function check(i){
   let aBtn=document.createElement("button");
   let bBtn=document.createElement("button");
 
-  aBtn.innerText="Team A صح";
-  bBtn.innerText="Team B صح";
+  aBtn.innerText="Team A";
+  bBtn.innerText="Team B";
 
   aBtn.onclick=()=>give("A",i===currentQ.c);
   bBtn.onclick=()=>give("B",i===currentQ.c);
@@ -168,15 +179,12 @@ function give(team,correct){
     else b++;
   }
 
-  document.getElementById("a").innerText=a;
-  document.getElementById("b").innerText=b;
+  turn = (turn==="A")?"B":"A";
 
-  turn=(turn==="A")?"B":"A";
-
-  pick();
+  renderCats();
 }
 
-pick();
+renderCats();
 
 </script>
 
