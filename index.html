@@ -1,29 +1,94 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة سين جيم</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #111;
-            color: white;
-            text-align: center;
-            direction: rtl;
-            margin: 0;
-            padding: 0;
-        }
-        h1 {
-            margin: 20px 0;
-            color: gold;
-        }
-        .category-selection, .question-section {
-            margin: 30px;
-        }
-        .category-button, .answer-button {
-            display: block;
-            margin: 15px auto;
-            padding: 15px;
-            width: 60%;
-            background-color: #222
+<meta charset="UTF-8">
+<title>اختيار الفئات</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family: Arial;
+  background: radial-gradient(circle,#001a33,#000);
+  color:white;
+  text-align:center;
+}
+
+h1{color:gold;margin:15px}
+
+.section{
+  margin:10px;
+  padding:10px;
+  border:1px solid gold;
+  border-radius:10px;
+  background:#111;
+}
+
+button{
+  padding:12px;
+  margin:5px;
+  width:80%;
+  border:none;
+  border-radius:10px;
+  background:#222;
+  color:white;
+}
+
+button:active{
+  background:gold;
+  color:black;
+}
+
+.start{
+  background:gold;
+  color:black;
+  font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎮 اختيار الفئات</h1>
+
+<div class="section">
+<h3>الفئات</h3>
+
+<button onclick="toggle(this,'kuwait')">🇰🇼 الكويت</button>
+<button onclick="toggle(this,'general')">🌍 معلومات عامة</button>
+<button onclick="toggle(this,'media')">📺 إعلام</button>
+<button onclick="toggle(this,'football')">⚽ كرة قدم كويتية</button>
+<button onclick="toggle(this,'arabi')">🟢 نادي العربي</button>
+<button onclick="toggle(this,'qadsia')">🟡 نادي القادسية</button>
+
+</div>
+
+<button class="start" onclick="startGame()">▶ لعب</button>
+
+<script>
+let selected = [];
+
+function toggle(btn,val){
+  if(selected.includes(val)){
+    selected = selected.filter(v=>v!==val);
+    btn.style.background="#222";
+    btn.style.color="white";
+  }else{
+    selected.push(val);
+    btn.style.background="gold";
+    btn.style.color="black";
+  }
+}
+
+function startGame(){
+  if(selected.length===0){
+    alert("اختر فئة واحدة على الأقل");
+    return;
+  }
+  localStorage.setItem("cats",JSON.stringify(selected));
+  location.href="game.html";
+}
+</script>
+
+</body>
+</html>
