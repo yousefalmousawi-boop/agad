@@ -2,183 +2,203 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Seen Jeem Style Game</title>
+<title>Seen Jeem TV Game</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
   margin: 0;
   font-family: Arial;
-  background: radial-gradient(circle, #0b1b2b, #000);
+  background: radial-gradient(circle at top, #001a33, #000);
   color: white;
   text-align: center;
 }
 
-/* Top bar like TV show */
 .header {
-  background: linear-gradient(90deg, #002b5b, #caa24a);
   padding: 15px;
+  background: linear-gradient(90deg, #002b5b, gold);
   font-size: 22px;
   font-weight: bold;
-  letter-spacing: 2px;
 }
 
-.scoreboard {
-  display: flex;
-  justify-content: space-around;
+.section {
   margin: 15px;
+  padding: 10px;
 }
 
-.team {
-  background: #111;
-  padding: 10px;
-  border-radius: 12px;
-  width: 40%;
-  border: 1px solid #caa24a;
+button {
+  padding: 12px;
+  margin: 6px;
+  border-radius: 10px;
+  border: none;
+  background: #222;
+  color: white;
+  width: 80%;
+}
+
+button:active {
+  background: gold;
+  color: black;
 }
 
 .card {
   background: #111;
-  margin: 20px;
-  padding: 20px;
-  border-radius: 15px;
-  border: 1px solid #333;
+  margin: 15px;
+  padding: 15px;
+  border-radius: 12px;
 }
 
-.category {
-  color: #caa24a;
-  font-size: 18px;
+.teamBox {
+  display: flex;
+  justify-content: space-around;
 }
 
-.question {
-  font-size: 20px;
-  margin: 15px 0;
-}
-
-button {
-  width: 80%;
-  padding: 12px;
-  margin: 8px;
+.team {
+  background: #111;
+  border: 1px solid gold;
+  padding: 10px;
+  width: 40%;
   border-radius: 10px;
-  border: none;
-  font-size: 16px;
-  background: #222;
-  color: white;
 }
 
-button:hover {
-  background: #caa24a;
-  color: black;
-}
-
-#next {
-  background: #caa24a;
-  color: black;
-  display: none;
+#timer {
+  font-size: 22px;
+  color: red;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">🇰🇼 سين جيم - Style Game</div>
+<div class="header">🇰🇼 سين جيم TV - Choose Your Subjects</div>
 
-<div class="scoreboard">
+<!-- SETUP -->
+<div id="setup">
+
+<h3>Team A choose 3 subjects</h3>
+<button onclick="pickA('Kuwait')">Kuwait 🇰🇼</button>
+<button onclick="pickA('Sports')">Sports ⚽</button>
+<button onclick="pickA('Islam')">Islam 🕌</button>
+<button onclick="pickA('General')">General 🌍</button>
+
+<h3>Team B choose 3 subjects</h3>
+<button onclick="pickB('Kuwait')">Kuwait 🇰🇼</button>
+<button onclick="pickB('Sports')">Sports ⚽</button>
+<button onclick="pickB('Islam')">Islam 🕌</button>
+<button onclick="pickB('General')">General 🌍</button>
+
+<br><br>
+<button onclick="startGame()" style="background:gold;color:black;">START GAME</button>
+
+</div>
+
+<!-- GAME -->
+<div id="game" style="display:none">
+
+<div class="teamBox">
   <div class="team">Team A<br><span id="a">0</span></div>
   <div class="team">Team B<br><span id="b">0</span></div>
 </div>
 
 <div class="card">
-  <div class="category" id="cat"></div>
-  <div class="question" id="q"></div>
-
+  <div id="subject"></div>
+  <div id="timer">10</div>
+  <div id="question"></div>
   <div id="answers"></div>
+</div>
 
-  <button id="next" onclick="nextQ()">Next</button>
 </div>
 
 <script>
+
+let teamA = [];
+let teamB = [];
+
 let aScore = 0;
 let bScore = 0;
 let turn = "A";
+let time = 10;
+let interval;
 
-const data = [
-  {
-    cat: "🇰🇼 Kuwait",
-    q: "What is Kuwait famous for?",
-    a: ["Oil", "Snow", "Volcanoes", "Forests"],
-    c: 0
-  },
-  {
-    cat: "⚽ Sports",
-    q: "How many players in football?",
-    a: ["7", "9", "11", "12"],
-    c: 2
-  },
-  {
-    cat: "🌍 General",
-    q: "Capital of France?",
-    a: ["Paris", "London", "Rome", "Berlin"],
-    c: 0
-  },
-  {
-    cat: "🕌 Culture",
-    q: "Main religion in Kuwait?",
-    a: ["Islam", "Hinduism", "Buddhism", "Christianity"],
-    c: 0
-  }
-];
+function pickA(sub) {
+  if (teamA.length < 3 && !teamA.includes(sub)) teamA.push(sub);
+}
 
-let i = 0;
+function pickB(sub) {
+  if (teamB.length < 3 && !teamB.includes(sub)) teamB.push(sub);
+}
 
-function load() {
-  document.getElementById("next").style.display = "none";
+const Q = {
+  Kuwait: [
+    {q:"Capital of Kuwait?",a:["Kuwait City","Hawalli","Farwaniya"],c:0},
+  ],
+  Sports: [
+    {q:"Football players?",a:["11","9","12"],c:0},
+  ],
+  Islam: [
+    {q:"Daily prayers?",a:["3","5","6"],c:1},
+  ],
+  General: [
+    {q:"Earth is a?",a:["Planet","Star","Moon"],c:0},
+  ]
+};
 
-  let d = data[i];
-  document.getElementById("cat").innerText = d.cat;
-  document.getElementById("q").innerText = "Team " + turn + ": " + d.q;
+function startGame(){
+  document.getElementById("setup").style.display="none";
+  document.getElementById("game").style.display="block";
+  loadQ();
+}
+
+function loadQ(){
+  let subject = (turn==="A"?teamA:teamB)[Math.floor(Math.random()*3)];
+
+  let q = Q[subject][0];
+
+  document.getElementById("subject").innerText = "Subject: " + subject;
+  document.getElementById("question").innerText = "Team " + turn + ": " + q.q;
 
   let box = document.getElementById("answers");
   box.innerHTML = "";
 
-  d.a.forEach((ans, index) => {
-    let btn = document.createElement("button");
-    btn.innerText = ans;
-
-    btn.onclick = () => {
-      if (index === d.c) {
-        if (turn === "A") aScore++;
+  q.a.forEach((ans,i)=>{
+    let b = document.createElement("button");
+    b.innerText = ans;
+    b.onclick = ()=>{
+      if(i===q.c){
+        if(turn==="A") aScore++;
         else bScore++;
       }
-
-      document.getElementById("a").innerText = aScore;
-      document.getElementById("b").innerText = bScore;
-
-      document.getElementById("next").style.display = "block";
+      document.getElementById("a").innerText=aScore;
+      document.getElementById("b").innerText=bScore;
+      next();
     };
-
-    box.appendChild(btn);
+    box.appendChild(b);
   });
+
+  startTimer();
 }
 
-function nextQ() {
-  i++;
-  if (i >= data.length) {
-    document.getElementById("q").innerText =
-      aScore > bScore ? "Team A Wins 🏆" :
-      bScore > aScore ? "Team B Wins 🏆" :
-      "Draw 🤝";
+function startTimer(){
+  clearInterval(interval);
+  time=10;
+  document.getElementById("timer").innerText=time;
 
-    document.getElementById("answers").innerHTML = "";
-    document.getElementById("next").style.display = "none";
-    return;
-  }
+  interval=setInterval(()=>{
+    time--;
+    document.getElementById("timer").innerText=time;
 
-  turn = turn === "A" ? "B" : "A";
-  load();
+    if(time<=0){
+      next();
+    }
+  },1000);
 }
 
-load();
+function next(){
+  clearInterval(interval);
+  turn = (turn==="A")?"B":"A";
+  loadQ();
+}
+
 </script>
 
 </body>
