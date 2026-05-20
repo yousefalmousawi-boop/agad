@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>لعبة سين جيم</title>
+<title>اقعد - اللعبة</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -29,24 +29,24 @@ body{
 
 .box{
   background:#111;
-  padding:10px;
   border:1px solid gold;
+  padding:10px;
   width:40%;
   border-radius:10px;
 }
 
-.card{
+.panel{
   margin:10px;
-  padding:10px;
   background:#111;
+  padding:10px;
   border-radius:10px;
 }
 
 button{
   width:80%;
-  margin:6px;
-  padding:12px;
-  border-radius:10px;
+  padding:10px;
+  margin:5px;
+  border-radius:8px;
   border:none;
   background:#222;
   color:white;
@@ -63,118 +63,154 @@ button:active{
 }
 
 .img{
-  width:120px;
-  height:120px;
-  margin:10px auto;
-  background:#333;
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  font-size:40px;
+  margin:10px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">🎮 TV QUIZ GAME</div>
+<div class="header">🎮 اقعد - TV Quiz</div>
 
 <div class="score">
-  <div class="box">Team A<br><span id="a">0</span></div>
-  <div class="box">Team B<br><span id="b">0</span></div>
+  <div class="box">A<br><span id="a">0</span></div>
+  <div class="box">B<br><span id="b">0</span></div>
 </div>
 
-<div class="card">
-  <div id="cat"></div>
-  <div class="img" id="img">📷</div>
-  <div id="timer">60</div>
-  <div id="q"></div>
-  <div id="answers"></div>
+<div class="panel">
+<div id="cat"></div>
+<div class="img" id="img">📷</div>
+<div id="timer">60</div>
+<div id="q"></div>
+<div id="answers"></div>
+<div id="points"></div>
 </div>
 
 <script>
+
 let cats = JSON.parse(localStorage.getItem("cats")||"[]");
 
 let a=0,b=0;
 let turn="A";
 let time=60;
+let selectedCat="";
+let selectedPoints=0;
 let interval;
 
-const data = {
-  kuwait:[
-    {q:"ما عاصمة الكويت؟",a:["الكويت","الجبيل","دبي"],c:0,img:"🇰🇼"}
-  ],
-  general:[
-    {q:"كم كوكب في النظام الشمسي؟",a:["8","9","7"],c:0,img:"🌍"}
-  ],
-  media:[
-    {q:"ما معنى إعلام؟",a:["صحافة","رياضة","طب"],c:0,img:"📺"}
-  ],
-  football:[
-    {q:"كم لاعب في الفريق؟",a:["11","10","9"],c:0,img:"⚽"}
-  ],
-  arabi:[
-    {q:"لون نادي العربي؟",a:["أخضر","أحمر","أزرق"],c:0,img:"🟢"}
-  ],
-  qadsia:[
-    {q:"لون القادسية؟",a:["أصفر","أخضر","أسود"],c:0,img:"🟡"}
-  ]
+/* 📦 الأسئلة */
+const Q = {
+ kuwait:{
+ 200:{q:"عاصمة الكويت؟",a:["الكويت","الجبيل","دبي"],c:0,img:"🇰🇼"},
+ 400:{q:"أشهر ميناء؟",a:["الشويخ","جدة","الدوحة"],c:0,img:"🚢"},
+ 600:{q:"كم محافظة؟",a:["6","5","7"],c:0,img:"🏙️"}
+ },
+ general:{
+ 200:{q:"كم كوكب؟",a:["8","9","7"],c:0,img:"🌍"},
+ 400:{q:"أكبر قارة؟",a:["آسيا","أفريقيا","أوروبا"],c:0,img:"🌏"},
+ 600:{q:"أطول نهر؟",a:["النيل","دجلة","الأمازون"],c:2,img:"🌊"}
+ },
+ media:{
+ 200:{q:"الإعلام يعني؟",a:["صحافة","طب","رياضة"],c:0,img:"📺"},
+ 400:{q:"أول صحيفة؟",a:["الرأي","الوطن","السياسة"],c:0,img:"📰"},
+ 600:{q:"TV يعني؟",a:["تلفزيون","هاتف","كمبيوتر"],c:0,img:"📡"}
+ },
+ football:{
+ 200:{q:"كم لاعب؟",a:["11","10","9"],c:0,img:"⚽"},
+ 400:{q:"بطولة الكويت؟",a:["الدوري","كأس العالم","يويفا"],c:0,img:"🏆"},
+ 600:{q:"أفضل نادي؟",a:["الكويت","العربي","كلهم"],c:0,img:"🔥"}
+ },
+ arabi:{
+ 200:{q:"لون النادي؟",a:["أخضر","أحمر","أزرق"],c:0,img:"🟢"},
+ 400:{q:"ملعبه؟",a:["جابر","الصداقة","المدينة"],c:1,img:"🏟️"},
+ 600:{q:"تأسس؟",a:["1960","1950","1970"],c:0,img:"📅"}
+ },
+ qadsia:{
+ 200:{q:"لون القادسية؟",a:["أصفر","أخضر","أزرق"],c:0,img:"🟡"},
+ 400:{q:"ملعب؟",a:["جابر","الصداقة","الفحيحيل"],c:0,img:"🏟️"},
+ 600:{q:"بطولات؟",a:["كثيرة","قليلة","صفر"],c:0,img:"🏆"}
+ }
 };
 
-function getRandomCat(){
-  return cats[Math.floor(Math.random()*cats.length)];
+function pickCat(){
+ selectedCat = cats[Math.floor(Math.random()*cats.length)];
+ document.getElementById("cat").innerText = selectedCat.toUpperCase();
+
+ showBoard();
 }
 
-function load(){
-  let c=getRandomCat();
-  let q=data[c][0];
+function showBoard(){
+ let box = document.getElementById("answers");
+ box.innerHTML="";
 
-  document.getElementById("cat").innerText=c;
-  document.getElementById("img").innerText=q.img;
-  document.getElementById("q").innerText="Team "+turn+": "+q.q;
+ [200,400,600].forEach(p=>{
+  let btn=document.createElement("button");
+  btn.innerText="اختيار "+p;
 
-  let box=document.getElementById("answers");
-  box.innerHTML="";
+  btn.onclick=()=>{
+    selectedPoints=p;
+    loadQ();
+  };
 
-  q.a.forEach((x,i)=>{
-    let b=document.createElement("button");
-    b.innerText=x;
-    b.onclick=()=>{
-      if(i===q.c){
-        if(turn==="A")a++; else b++;
-      }
-      document.getElementById("a").innerText=a;
-      document.getElementById("b").innerText=b;
-      next();
-    };
-    box.appendChild(b);
-  });
-
-  startTimer(q);
+  box.appendChild(btn);
+ });
 }
 
-function startTimer(q){
-  clearInterval(interval);
-  time=60;
+function loadQ(){
+
+ let q = Q[selectedCat][selectedPoints];
+
+ document.getElementById("q").innerText="Team "+turn+": "+q.q;
+ document.getElementById("img").innerText=q.img;
+
+ let box=document.getElementById("answers");
+ box.innerHTML="";
+
+ q.a.forEach((x,i)=>{
+  let b=document.createElement("button");
+
+  b.innerText=x;
+  b.onclick=()=>check(i);
+
+  box.appendChild(b);
+ });
+
+ startTimer();
+}
+
+function startTimer(){
+ clearInterval(interval);
+ time=60;
+ document.getElementById("timer").innerText=time;
+
+ interval=setInterval(()=>{
+  time--;
   document.getElementById("timer").innerText=time;
+  if(time<=0) next();
+ },1000);
+}
 
-  interval=setInterval(()=>{
-    time--;
-    document.getElementById("timer").innerText=time;
+function check(i){
+ let q = Q[selectedCat][selectedPoints];
 
-    if(time<=0){
-      next();
-    }
-  },1000);
+ if(i===q.c){
+  if(turn==="A")a++; else b++;
+ }
+
+ document.getElementById("a").innerText=a;
+ document.getElementById("b").innerText=b;
+
+ next();
 }
 
 function next(){
-  clearInterval(interval);
-  turn=(turn==="A")?"B":"A";
-  load();
+ clearInterval(interval);
+ turn = (turn==="A")?"B":"A";
+ pickCat();
 }
 
-load();
+pickCat();
+
 </script>
 
 </body>
