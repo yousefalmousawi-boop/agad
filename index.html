@@ -2,184 +2,183 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>سين جيم - Seen Jeem</title>
+<title>Seen Jeem Style Game</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
   margin: 0;
   font-family: Arial;
-  background: #111;
+  background: radial-gradient(circle, #0b1b2b, #000);
   color: white;
   text-align: center;
 }
 
-h1 {
-  margin: 10px;
-}
-
-.card {
-  background: #222;
-  margin: 20px;
-  padding: 20px;
-  border-radius: 15px;
-}
-
-button {
+/* Top bar like TV show */
+.header {
+  background: linear-gradient(90deg, #002b5b, #caa24a);
   padding: 15px;
-  margin: 8px;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 2px;
 }
 
-.answer {
-  display: block;
-  width: 80%;
-  margin: 10px auto;
-  background: #333;
-  color: white;
-}
-
-.answer:hover {
-  background: #555;
-}
-
-#nextBtn {
-  background: gold;
-  color: black;
-  display: none;
-}
-
-.teamBox {
+.scoreboard {
   display: flex;
   justify-content: space-around;
-  margin-top: 10px;
+  margin: 15px;
 }
 
 .team {
-  background: #333;
+  background: #111;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 12px;
   width: 40%;
+  border: 1px solid #caa24a;
 }
 
+.card {
+  background: #111;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 15px;
+  border: 1px solid #333;
+}
+
+.category {
+  color: #caa24a;
+  font-size: 18px;
+}
+
+.question {
+  font-size: 20px;
+  margin: 15px 0;
+}
+
+button {
+  width: 80%;
+  padding: 12px;
+  margin: 8px;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+  background: #222;
+  color: white;
+}
+
+button:hover {
+  background: #caa24a;
+  color: black;
+}
+
+#next {
+  background: #caa24a;
+  color: black;
+  display: none;
+}
 </style>
 </head>
 
 <body>
 
-<h1>🇰🇼 سين جيم - Seen Jeem</h1>
+<div class="header">🇰🇼 سين جيم - Style Game</div>
 
-<div class="teamBox">
-  <div class="team">Team A: <span id="scoreA">0</span></div>
-  <div class="team">Team B: <span id="scoreB">0</span></div>
+<div class="scoreboard">
+  <div class="team">Team A<br><span id="a">0</span></div>
+  <div class="team">Team B<br><span id="b">0</span></div>
 </div>
 
 <div class="card">
-  <h2 id="category">Category</h2>
-  <h3 id="question">Question</h3>
+  <div class="category" id="cat"></div>
+  <div class="question" id="q"></div>
 
   <div id="answers"></div>
 
-  <button id="nextBtn" onclick="nextQuestion()">Next Question</button>
+  <button id="next" onclick="nextQ()">Next</button>
 </div>
 
 <script>
-let scoreA = 0;
-let scoreB = 0;
+let aScore = 0;
+let bScore = 0;
 let turn = "A";
 
-const questions = [
+const data = [
   {
-    category: "🇰🇼 Kuwait",
-    q: "What is the capital of Kuwait?",
-    a: ["Hawalli", "Kuwait City", "Jahra", "Salmiya"],
-    correct: 1
+    cat: "🇰🇼 Kuwait",
+    q: "What is Kuwait famous for?",
+    a: ["Oil", "Snow", "Volcanoes", "Forests"],
+    c: 0
   },
   {
-    category: "⚽ Sports",
-    q: "How many players in a football team?",
-    a: ["9", "10", "11", "12"],
-    correct: 2
+    cat: "⚽ Sports",
+    q: "How many players in football?",
+    a: ["7", "9", "11", "12"],
+    c: 2
   },
   {
-    category: "🌍 General",
-    q: "What planet do we live on?",
-    a: ["Mars", "Venus", "Earth", "Jupiter"],
-    correct: 2
+    cat: "🌍 General",
+    q: "Capital of France?",
+    a: ["Paris", "London", "Rome", "Berlin"],
+    c: 0
   },
   {
-    category: "🕌 Islam",
-    q: "How many daily prayers in Islam?",
-    a: ["3", "5", "7", "4"],
-    correct: 1
+    cat: "🕌 Culture",
+    q: "Main religion in Kuwait?",
+    a: ["Islam", "Hinduism", "Buddhism", "Christianity"],
+    c: 0
   }
 ];
 
-let current = 0;
+let i = 0;
 
-function loadQuestion() {
-  document.getElementById("nextBtn").style.display = "none";
+function load() {
+  document.getElementById("next").style.display = "none";
 
-  let q = questions[current];
+  let d = data[i];
+  document.getElementById("cat").innerText = d.cat;
+  document.getElementById("q").innerText = "Team " + turn + ": " + d.q;
 
-  document.getElementById("category").innerText = q.category;
-  document.getElementById("question").innerText = "Team " + turn + ": " + q.q;
+  let box = document.getElementById("answers");
+  box.innerHTML = "";
 
-  let answersDiv = document.getElementById("answers");
-  answersDiv.innerHTML = "";
-
-  q.a.forEach((ans, i) => {
+  d.a.forEach((ans, index) => {
     let btn = document.createElement("button");
-    btn.className = "answer";
     btn.innerText = ans;
 
-    btn.onclick = () => checkAnswer(i);
-    answersDiv.appendChild(btn);
+    btn.onclick = () => {
+      if (index === d.c) {
+        if (turn === "A") aScore++;
+        else bScore++;
+      }
+
+      document.getElementById("a").innerText = aScore;
+      document.getElementById("b").innerText = bScore;
+
+      document.getElementById("next").style.display = "block";
+    };
+
+    box.appendChild(btn);
   });
 }
 
-function checkAnswer(i) {
-  let q = questions[current];
+function nextQ() {
+  i++;
+  if (i >= data.length) {
+    document.getElementById("q").innerText =
+      aScore > bScore ? "Team A Wins 🏆" :
+      bScore > aScore ? "Team B Wins 🏆" :
+      "Draw 🤝";
 
-  if (i === q.correct) {
-    if (turn === "A") scoreA++;
-    else scoreB++;
-  }
-
-  document.getElementById("scoreA").innerText = scoreA;
-  document.getElementById("scoreB").innerText = scoreB;
-
-  document.getElementById("nextBtn").style.display = "block";
-}
-
-function nextQuestion() {
-  current++;
-
-  if (current >= questions.length) {
-    endGame();
+    document.getElementById("answers").innerHTML = "";
+    document.getElementById("next").style.display = "none";
     return;
   }
 
   turn = turn === "A" ? "B" : "A";
-  loadQuestion();
+  load();
 }
 
-function endGame() {
-  document.getElementById("category").innerText = "Game Finished 🎉";
-
-  let winner =
-    scoreA > scoreB ? "Team A Wins 🏆" :
-    scoreB > scoreA ? "Team B Wins 🏆" :
-    "Draw 🤝";
-
-  document.getElementById("question").innerText = winner;
-  document.getElementById("answers").innerHTML = "";
-  document.getElementById("nextBtn").style.display = "none";
-}
-
-loadQuestion();
+load();
 </script>
 
 </body>
