@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>اقعد - اختيار الفئات</title>
+<title>اقعد</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -15,6 +15,12 @@ body{
 }
 
 h1{color:gold}
+
+.title{
+  font-size:22px;
+  margin:10px;
+  color:gold;
+}
 
 .card{
   background:#111;
@@ -49,15 +55,19 @@ button:active{
 
 <body>
 
-<h1>🎮 اختر الفئات</h1>
+<h1>🎮 اقعد</h1>
+
+<div class="title">👑 يوسف البطل</div>
 
 <div class="card">
+
 <button onclick="add('kuwait')">🇰🇼 الكويت</button>
 <button onclick="add('general')">🌍 معلومات عامة</button>
 <button onclick="add('flags')">🏳️ أعلام دول</button>
-<button onclick="add('football')">⚽ كرة قدم كويتية</button>
+<button onclick="add('football')">⚽ كرة قدم</button>
 <button onclick="add('arabi')">🟢 العربي</button>
 <button onclick="add('qadsia')">🟡 القادسية</button>
+
 </div>
 
 <button class="start" onclick="go()">▶ لعب</button>
