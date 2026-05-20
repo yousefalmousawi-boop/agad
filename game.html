@@ -19,32 +19,35 @@ body{
   color:black;
   padding:10px;
   font-weight:bold;
-  font-size:20px;
 }
 
-/* لوحة الفئات */
+/* الفئات المختارة */
+.selectedCats{
+  background:#111;
+  padding:10px;
+  color:gold;
+}
+
+/* اللوحة */
 .board{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:8px;
+  gap:6px;
   padding:10px;
 }
 
-.cat{
+.catTitle{
   background:#111;
   border:1px solid gold;
-  border-radius:8px;
-  padding:10px;
+  padding:8px;
   font-weight:bold;
 }
 
 .cell{
   background:#003566;
   border:1px solid gold;
-  padding:20px;
-  border-radius:6px;
+  padding:18px;
   cursor:pointer;
-  font-size:18px;
 }
 
 .cell.used{
@@ -53,8 +56,8 @@ body{
   pointer-events:none;
 }
 
-/* شاشة السؤال */
-.questionScreen{
+/* السؤال */
+.screen{
   display:none;
   position:fixed;
   top:0; left:0;
@@ -64,10 +67,10 @@ body{
   padding:20px;
 }
 
-.qBox{
-  margin-top:50px;
-  font-size:22px;
+.q{
+  margin-top:40px;
   color:gold;
+  font-size:22px;
 }
 
 button{
@@ -84,6 +87,38 @@ button:active{
   background:gold;
   color:black;
 }
+
+/* النتيجة */
+.score{
+  display:flex;
+  justify-content:space-around;
+  padding:10px;
+}
+
+.box{
+  background:#111;
+  border:1px solid gold;
+  padding:10px;
+  width:40%;
+}
+
+/* الفوز */
+.win{
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;
+  height:100%;
+  background:black;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+}
+
+.win h1{
+  color:gold;
+  font-size:40px;
+}
 </style>
 </head>
 
@@ -91,28 +126,43 @@ button:active{
 
 <div class="header">🎮 اقعد</div>
 
+<div class="selectedCats" id="catsList"></div>
+
+<div class="score">
+  <div class="box">A: <span id="a">0</span></div>
+  <div class="box">B: <span id="b">0</span></div>
+</div>
+
 <div class="board" id="board"></div>
 
-<!-- شاشة السؤال -->
-<div class="questionScreen" id="screen">
+<div class="screen" id="screen">
 
-  <div class="qBox" id="q"></div>
-
+  <div class="q" id="q"></div>
   <div id="answers"></div>
-
   <div id="result"></div>
 
 </div>
 
+<div class="win" id="win">
+  <h1 id="winner"></h1>
+  <button onclick="location.reload()">إعادة اللعب</button>
+</div>
+
 <script>
 
+let cats = JSON.parse(localStorage.getItem("cats")||"[]");
+
+let a=0,b=0;
 let turn="A";
 let used={};
+let currentCorrect=0;
+
+const WIN=5; // الفوز عند 5 نقاط
 
 const Q = {
 kuwait:{
 200:{q:"عاصمة الكويت؟",a:["الكويت","دبي","الدوحة"],c:0},
-400:{q:"أشهر برج بالكويت؟",a:["التحرير","إيفل","خليفة"],c:0}
+400:{q:"أشهر برج؟",a:["التحرير","خليفة","إيفل"],c:0}
 },
 general:{
 200:{q:"كم كوكب؟",a:["8","9","7"],c:0},
@@ -121,10 +171,17 @@ general:{
 flags:{
 200:{q:"علم اليابان؟",a:["شمس حمراء","نجمة","هلال"],c:0},
 400:{q:"علم فرنسا؟",a:["أزرق أبيض أحمر","أخضر","أسود"],c:0}
+},
+islam:{
+200:{q:"كم عدد أجزاء القرآن؟",a:["30","20","114"],c:0},
+400:{q:"سورة الفاتحة كم آية؟",a:["7","5","10"],c:0}
 }
 };
 
-let currentCorrect=0;
+function showCats(){
+  document.getElementById("catsList").innerText =
+  "الفئات: " + cats.join(" | ");
+}
 
 function build(){
 
@@ -133,39 +190,40 @@ function build(){
 
   for(let cat in Q){
 
-    // اسم الفئة
-    let title=document.createElement("div");
-    title.className="cat";
-    title.innerText=cat;
-    board.appendChild(title);
+    if(!cats.includes(cat)) continue;
 
-    for(let points in Q[cat]){
+    let t=document.createElement("div");
+    t.className="catTitle";
+    t.innerText=cat;
+    board.appendChild(t);
 
-      let key=cat+points;
+    for(let p in Q[cat]){
 
-      let cell=document.createElement("div");
-      cell.className="cell";
-      cell.innerText=points;
+      let key=cat+p;
 
-      if(used[key]) cell.classList.add("used");
+      let c=document.createElement("div");
+      c.className="cell";
+      c.innerText=p;
 
-      cell.onclick=()=>open(cat,points,key);
+      if(used[key]) c.classList.add("used");
 
-      board.appendChild(cell);
+      c.onclick=()=>open(cat,p,key);
+
+      board.appendChild(c);
     }
   }
 }
 
-function open(cat,points,key){
+function open(cat,p,key){
 
   if(used[key]) return;
   used[key]=true;
 
-  let qObj = Q[cat][points];
-  currentCorrect = qObj.c;
+  let qObj=Q[cat][p];
+  currentCorrect=qObj.c;
 
   document.getElementById("screen").style.display="block";
-  document.getElementById("q").innerText="Team "+turn+" : "+qObj.q;
+  document.getElementById("q").innerText="Team "+turn+": "+qObj.q;
 
   let box=document.getElementById("answers");
   box.innerHTML="";
@@ -184,38 +242,53 @@ function open(cat,points,key){
 function check(i,qObj){
 
   document.getElementById("result").innerHTML=
-  "✔ الإجابة الصحيحة: "+qObj.a[currentCorrect];
+  "✔ الصحيح: "+qObj.a[currentCorrect];
 
   let aBtn=document.createElement("button");
   let bBtn=document.createElement("button");
 
-  aBtn.innerText="Team A صح";
-  bBtn.innerText="Team B صح";
+  aBtn.innerText="A صحيح";
+  bBtn.innerText="B صحيح";
 
   aBtn.onclick=()=>give("A",i===currentCorrect);
   bBtn.onclick=()=>give("B",i===currentCorrect);
 
-  let box=document.getElementById("result");
-  box.appendChild(document.createElement("br"));
-  box.appendChild(aBtn);
-  box.appendChild(bBtn);
+  document.getElementById("result").appendChild(document.createElement("br"));
+  document.getElementById("result").appendChild(aBtn);
+  document.getElementById("result").appendChild(bBtn);
 }
 
 function give(team,correct){
 
   if(correct){
-    alert("✔ صح");
-  }else{
-    alert("✖ غلط");
+    if(team==="A")a++;
+    else b++;
   }
 
-  turn = (turn==="A")?"B":"A";
+  document.getElementById("a").innerText=a;
+  document.getElementById("b").innerText=b;
 
   document.getElementById("screen").style.display="none";
+
+  turn=(turn==="A")?"B":"A";
+
+  if(a>=WIN || b>=WIN){
+    end();
+    return;
+  }
 
   build();
 }
 
+function end(){
+
+  let w = (a>b) ? "🏆 Team A فاز!" : "🏆 Team B فاز!";
+
+  document.getElementById("winner").innerText=w;
+  document.getElementById("win").style.display="flex";
+}
+
+showCats();
 build();
 
 </script>
