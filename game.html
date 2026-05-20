@@ -78,12 +78,6 @@ button:active{
 <div id="cat"></div>
 <div id="q"></div>
 
-<div id="controls">
-<button onclick="pick(200)">200</button>
-<button onclick="pick(400)">400</button>
-<button onclick="pick(600)">600</button>
-</div>
-
 <div id="answers"></div>
 
 <div id="answerBox"></div>
@@ -98,87 +92,69 @@ let a=0,b=0;
 let turn="A";
 
 let currentCat="";
-let currentPoints=0;
-
-let usedQuestions=[]; // 🔥 يمنع التكرار
+let currentQ=null;
 
 const Q = {
-kuwait:{
-200:{q:"عاصمة الكويت؟",a:["الكويت","دبي","الدوحة"],c:0},
-400:{q:"أشهر ميناء؟",a:["الشويخ","جدة","بيروت"],c:0},
-600:{q:"كم محافظة؟",a:["6","5","7"],c:0}
-},
-general:{
-200:{q:"كم كوكب؟",a:["8","9","7"],c:0},
-400:{q:"أكبر قارة؟",a:["آسيا","أوروبا","أفريقيا"],c:0},
-600:{q:"أطول نهر؟",a:["النيل","دجلة","الأمازون"],c:2}
-},
-flags:{
-200:{q:"علم فرنسا؟",a:["أزرق/أبيض/أحمر","أخضر","أسود"],c:0},
-400:{q:"علم اليابان؟",a:["شمس حمراء","نجمة","هلال"],c:0},
-600:{q:"علم الكويت؟",a:["أخضر/أبيض/أحمر","أزرق","بنفسجي"],c:0}
-},
-football:{
-200:{q:"كم لاعب؟",a:["11","10","9"],c:0},
-400:{q:"بطولة الكويت؟",a:["الدوري","كأس العالم","يويفا"],c:0},
-600:{q:"أفضل نادي؟",a:["الكويت","العربي","كلهم"],c:0}
-},
-arabi:{
-200:{q:"لون النادي؟",a:["أخضر","أحمر","أزرق"],c:0},
-400:{q:"ملعبه؟",a:["الصداقة","جابر","المدينة"],c:0},
-600:{q:"تأسس؟",a:["1960","1950","1970"],c:0}
-},
-qadsia:{
-200:{q:"لون القادسية؟",a:["أصفر","أخضر","أزرق"],c:0},
-400:{q:"ملعبه؟",a:["جابر","الصداقة","الفحيحيل"],c:0},
-600:{q:"بطولاته؟",a:["كثيرة","قليلة","صفر"],c:0}
-}
+kuwait:[
+{q:"عاصمة الكويت؟",a:["الكويت","دبي","الدوحة"],c:0},
+{q:"أشهر ميناء؟",a:["الشويخ","جدة","بيروت"],c:0}
+],
+general:[
+{q:"كم كوكب؟",a:["8","9","7"],c:0},
+{q:"أكبر قارة؟",a:["آسيا","أوروبا","أفريقيا"],c:0}
+],
+flags:[
+{q:"علم فرنسا؟",a:["أزرق/أبيض/أحمر","أخضر","أسود"],c:0},
+{q:"علم اليابان؟",a:["شمس حمراء","نجمة","هلال"],c:0}
+],
+football:[
+{q:"كم لاعب؟",a:["11","10","9"],c:0}
+],
+arabi:[
+{q:"لون النادي؟",a:["أخضر","أحمر","أزرق"],c:0}
+],
+qadsia:[
+{q:"لون القادسية؟",a:["أصفر","أخضر","أزرق"],c:0}
+]
 };
 
-function pick(points){
+function pick(){
 
   currentCat = cats[Math.floor(Math.random()*cats.length)];
-  currentPoints = points;
 
-  let qObj = Q[currentCat][points];
-
-  // 🔥 منع تكرار السؤال
-  let key = currentCat+points+qObj.q;
-  if(usedQuestions.includes(key)){
-    return pick(points);
-  }
-  usedQuestions.push(key);
+  let arr = Q[currentCat];
+  currentQ = arr[Math.floor(Math.random()*arr.length)];
 
   document.getElementById("cat").innerText=currentCat;
-  document.getElementById("q").innerText="Team "+turn+": "+qObj.q;
+  document.getElementById("q").innerText="Team "+turn+": "+currentQ.q;
 
   let box=document.getElementById("answers");
   box.innerHTML="";
 
   document.getElementById("answerBox").innerHTML="";
 
-  qObj.a.forEach((x,i)=>{
+  currentQ.a.forEach((x,i)=>{
     let b=document.createElement("button");
     b.innerText=x;
-    b.onclick=()=>check(i,qObj);
+    b.onclick=()=>check(i);
     box.appendChild(b);
   });
 }
 
-function check(i,qObj){
+function check(i){
 
   let box=document.getElementById("answerBox");
 
-  box.innerHTML="✔ الإجابة الصحيحة: "+qObj.a[qObj.c];
+  box.innerHTML="✔ الإجابة الصحيحة: "+currentQ.a[currentQ.c];
 
   let aBtn=document.createElement("button");
   let bBtn=document.createElement("button");
 
-  aBtn.innerText="A صح";
-  bBtn.innerText="B صح";
+  aBtn.innerText="Team A صح";
+  bBtn.innerText="Team B صح";
 
-  aBtn.onclick=()=>give("A",i===qObj.c);
-  bBtn.onclick=()=>give("B",i===qObj.c);
+  aBtn.onclick=()=>give("A",i===currentQ.c);
+  bBtn.onclick=()=>give("B",i===currentQ.c);
 
   box.appendChild(document.createElement("br"));
   box.appendChild(aBtn);
@@ -188,8 +164,8 @@ function check(i,qObj){
 function give(team,correct){
 
   if(correct){
-    if(team==="A")a+=currentPoints;
-    else b+=currentPoints;
+    if(team==="A")a++;
+    else b++;
   }
 
   document.getElementById("a").innerText=a;
@@ -197,10 +173,10 @@ function give(team,correct){
 
   turn=(turn==="A")?"B":"A";
 
-  document.getElementById("answerBox").innerHTML="";
-
-  pick(currentPoints);
+  pick();
 }
+
+pick();
 
 </script>
 
