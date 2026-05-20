@@ -60,14 +60,13 @@ button:active{
 #answerBox{
   margin-top:10px;
   color:gold;
-  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">🎮 اقعد</div>
+<div class="header">🎮 اقعد - يوسف البطل</div>
 
 <div class="score">
   <div class="box">A<br><span id="a">0</span></div>
@@ -101,6 +100,8 @@ let turn="A";
 let currentCat="";
 let currentPoints=0;
 
+let usedQuestions=[]; // 🔥 يمنع التكرار
+
 const Q = {
 kuwait:{
 200:{q:"عاصمة الكويت؟",a:["الكويت","دبي","الدوحة"],c:0},
@@ -112,10 +113,10 @@ general:{
 400:{q:"أكبر قارة؟",a:["آسيا","أوروبا","أفريقيا"],c:0},
 600:{q:"أطول نهر؟",a:["النيل","دجلة","الأمازون"],c:2}
 },
-flags:{   // 🏳️ أعلام دول
-200:{q:"علم فرنسا لونه؟",a:["أزرق/أبيض/أحمر","أخضر/أبيض","أسود"],c:0},
-400:{q:"علم اليابان فيه؟",a:["شمس حمراء","نجمة","هلال"],c:0},
-600:{q:"علم الكويت فيه؟",a:["أخضر/أبيض/أحمر","أزرق","بنفسجي"],c:0}
+flags:{
+200:{q:"علم فرنسا؟",a:["أزرق/أبيض/أحمر","أخضر","أسود"],c:0},
+400:{q:"علم اليابان؟",a:["شمس حمراء","نجمة","هلال"],c:0},
+600:{q:"علم الكويت؟",a:["أخضر/أبيض/أحمر","أزرق","بنفسجي"],c:0}
 },
 football:{
 200:{q:"كم لاعب؟",a:["11","10","9"],c:0},
@@ -135,50 +136,57 @@ qadsia:{
 };
 
 function pick(points){
+
   currentCat = cats[Math.floor(Math.random()*cats.length)];
   currentPoints = points;
 
-  document.getElementById("cat").innerText="Category: "+currentCat;
+  let qObj = Q[currentCat][points];
 
-  let q = Q[currentCat][points];
+  // 🔥 منع تكرار السؤال
+  let key = currentCat+points+qObj.q;
+  if(usedQuestions.includes(key)){
+    return pick(points);
+  }
+  usedQuestions.push(key);
 
-  document.getElementById("q").innerText="Team "+turn+": "+q.q;
+  document.getElementById("cat").innerText=currentCat;
+  document.getElementById("q").innerText="Team "+turn+": "+qObj.q;
 
-  let box = document.getElementById("answers");
+  let box=document.getElementById("answers");
   box.innerHTML="";
 
   document.getElementById("answerBox").innerHTML="";
 
-  q.a.forEach((x,i)=>{
+  qObj.a.forEach((x,i)=>{
     let b=document.createElement("button");
     b.innerText=x;
-    b.onclick=()=>check(i);
+    b.onclick=()=>check(i,qObj);
     box.appendChild(b);
   });
 }
 
-function check(i){
-  let q = Q[currentCat][currentPoints];
+function check(i,qObj){
 
   let box=document.getElementById("answerBox");
 
-  box.innerHTML="✔ الإجابة الصحيحة: "+q.a[q.c];
+  box.innerHTML="✔ الإجابة الصحيحة: "+qObj.a[qObj.c];
 
-  let btnA=document.createElement("button");
-  btnA.innerText="Team A صح";
+  let aBtn=document.createElement("button");
+  let bBtn=document.createElement("button");
 
-  let btnB=document.createElement("button");
-  btnB.innerText="Team B صح";
+  aBtn.innerText="A صح";
+  bBtn.innerText="B صح";
 
-  btnA.onclick=()=>give("A",i===q.c);
-  btnB.onclick=()=>give("B",i===q.c);
+  aBtn.onclick=()=>give("A",i===qObj.c);
+  bBtn.onclick=()=>give("B",i===qObj.c);
 
   box.appendChild(document.createElement("br"));
-  box.appendChild(btnA);
-  box.appendChild(btnB);
+  box.appendChild(aBtn);
+  box.appendChild(bBtn);
 }
 
 function give(team,correct){
+
   if(correct){
     if(team==="A")a+=currentPoints;
     else b+=currentPoints;
@@ -187,7 +195,7 @@ function give(team,correct){
   document.getElementById("a").innerText=a;
   document.getElementById("b").innerText=b;
 
-  turn = (turn==="A")?"B":"A";
+  turn=(turn==="A")?"B":"A";
 
   document.getElementById("answerBox").innerHTML="";
 
