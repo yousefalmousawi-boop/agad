@@ -2,238 +2,98 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>اقعد - النهائي</title>
+<title>اقعد</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   margin:0;
   font-family:Arial;
-  background: radial-gradient(circle,#000,#001a33);
+  background: radial-gradient(circle,#001a33,#000);
   color:white;
   text-align:center;
 }
 
-.header{
+h1{color:gold}
+
+.title{
+  color:gold;
+  font-size:22px;
+  margin:10px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+  padding:10px;
+}
+
+.cat{
+  background:#111;
+  padding:15px;
+  border-radius:10px;
+  border:1px solid gold;
+  cursor:pointer;
+}
+
+.cat.active{
   background:gold;
   color:black;
-  padding:10px;
-  font-weight:bold;
-}
-
-.score{
-  display:flex;
-  justify-content:space-around;
-  margin:10px;
-}
-
-.box{
-  background:#111;
-  border:1px solid gold;
-  padding:10px;
-  width:40%;
-  border-radius:10px;
-}
-
-.panel{
-  margin:10px;
-  padding:10px;
-  background:#111;
-  border-radius:10px;
 }
 
 button{
   width:80%;
-  padding:10px;
-  margin:5px;
-  border-radius:8px;
+  padding:12px;
+  margin-top:10px;
   border:none;
-  background:#222;
-  color:white;
-}
-
-button:active{
+  border-radius:8px;
   background:gold;
   color:black;
-}
-
-#answerBox{
-  margin-top:10px;
-  color:gold;
-}
-
-/* 🏆 شاشة الفوز */
-.winScreen{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:black;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-}
-
-.winScreen h1{
-  color:gold;
-  font-size:40px;
+  font-size:18px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">🎮 اقعد - النهائي</div>
+<h1>🎮 اقعد</h1>
+<div class="title">👑 يوسف البطل</div>
 
-<div class="score">
-  <div class="box">A<br><span id="a">0</span></div>
-  <div class="box">B<br><span id="b">0</span></div>
-</div>
+<div class="grid">
 
-<div class="panel">
-
-<div id="chooseCat"></div>
-<div id="q"></div>
-
-<div id="answers"></div>
-
-<div id="answerBox"></div>
+<div class="cat" onclick="toggle(this,'kuwait')">🇰🇼 الكويت</div>
+<div class="cat" onclick="toggle(this,'general')">🌍 معلومات عامة</div>
+<div class="cat" onclick="toggle(this,'flags')">🏳️ أعلام دول</div>
+<div class="cat" onclick="toggle(this,'quran')">🕌 القرآن الكريم</div>
+<div class="cat" onclick="toggle(this,'culture')">📚 ثقافة عامة</div>
+<div class="cat" onclick="toggle(this,'media')">📺 إعلام</div>
 
 </div>
 
-<!-- 🏆 شاشة الفوز -->
-<div class="winScreen" id="win">
-  <h1 id="winnerText">🏆</h1>
-  <button onclick="restart()">🔁 إعادة اللعب</button>
-</div>
+<button onclick="start()">▶ بدء اللعبة</button>
 
 <script>
+let selected=[];
 
-let cats = JSON.parse(localStorage.getItem("cats")||"[]");
-
-let a=0,b=0;
-let turn="A";
-
-let currentQ=null;
-let currentCat="";
-
-const WIN_SCORE = 5; // 🏆 أول فريق يوصل 5 يفوز
-
-const Q = {
-kuwait:[
-{q:"عاصمة الكويت؟",a:["الكويت","دبي","الدوحة"],c:0},
-{q:"أشهر ميناء؟",a:["الشويخ","جدة","بيروت"],c:0}
-],
-general:[
-{q:"كم كوكب؟",a:["8","9","7"],c:0},
-{q:"أكبر قارة؟",a:["آسيا","أوروبا","أفريقيا"],c:0}
-],
-flags:[
-{q:"علم فرنسا؟",a:["أزرق/أبيض/أحمر","أخضر","أسود"],c:0},
-{q:"علم اليابان؟",a:["شمس حمراء","نجمة","هلال"],c:0}
-],
-football:[
-{q:"كم لاعب؟",a:["11","10","9"],c:0}
-],
-arabi:[
-{q:"لون النادي؟",a:["أخضر","أحمر","أزرق"],c:0}
-],
-qadsia:[
-{q:"لون القادسية؟",a:["أصفر","أخضر","أزرق"],c:0}
-]
-};
-
-function chooseCategory(){
-  let box=document.getElementById("chooseCat");
-  box.innerHTML="<h3>اختر الفئة</h3>";
-
-  cats.forEach(c=>{
-    let b=document.createElement("button");
-    b.innerText=c;
-    b.onclick=()=>startQuestion(c);
-    box.appendChild(b);
-  });
-}
-
-function startQuestion(cat){
-
-  currentCat = cat;
-
-  let arr = Q[cat];
-  currentQ = arr[Math.floor(Math.random()*arr.length)];
-
-  document.getElementById("chooseCat").innerHTML="";
-  document.getElementById("q").innerText="Team "+turn+": "+currentQ.q;
-
-  let box=document.getElementById("answers");
-  box.innerHTML="";
-  document.getElementById("answerBox").innerHTML="";
-
-  currentQ.a.forEach((x,i)=>{
-    let b=document.createElement("button");
-    b.innerText=x;
-    b.onclick=()=>check(i);
-    box.appendChild(b);
-  });
-}
-
-function check(i){
-
-  let box=document.getElementById("answerBox");
-
-  box.innerHTML="✔ الإجابة الصحيحة: "+currentQ.a[currentQ.c];
-
-  let aBtn=document.createElement("button");
-  let bBtn=document.createElement("button");
-
-  aBtn.innerText="Team A صح";
-  bBtn.innerText="Team B صح";
-
-  aBtn.onclick=()=>give("A",i===currentQ.c);
-  bBtn.onclick=()=>give("B",i===currentQ.c);
-
-  box.appendChild(document.createElement("br"));
-  box.appendChild(aBtn);
-  box.appendChild(bBtn);
-}
-
-function give(team,correct){
-
-  if(correct){
-    if(team==="A")a++;
-    else b++;
+function toggle(el,val){
+  if(selected.includes(val)){
+    selected = selected.filter(x=>x!==val);
+    el.classList.remove("active");
+  }else{
+    selected.push(val);
+    el.classList.add("active");
   }
+}
 
-  document.getElementById("a").innerText=a;
-  document.getElementById("b").innerText=b;
-
-  // 🏆 فحص الفوز
-  if(a>=WIN_SCORE){
-    endGame("Team A");
+function start(){
+  if(selected.length===0){
+    alert("اختر فئة");
     return;
   }
-  if(b>=WIN_SCORE){
-    endGame("Team B");
-    return;
-  }
-
-  turn=(turn==="A")?"B":"A";
-  chooseCategory();
+  localStorage.setItem("cats",JSON.stringify(selected));
+  location.href="game.html";
 }
-
-function endGame(winner){
-  document.getElementById("win").style.display="flex";
-  document.getElementById("winnerText").innerText="🏆 "+winner+" فاز!";
-}
-
-function restart(){
-  location.reload();
-}
-
-chooseCategory();
-
 </script>
 
 </body>
