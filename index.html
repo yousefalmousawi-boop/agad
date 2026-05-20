@@ -2,34 +2,40 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>اختيار الفئات</title>
+<title>اقعد - اختيار الفئات</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   margin:0;
-  font-family: Arial;
+  font-family:Arial;
   background: radial-gradient(circle,#001a33,#000);
   color:white;
   text-align:center;
 }
 
-h1{color:gold;margin:15px}
+h1{color:gold}
 
-.section{
-  margin:10px;
+.grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
   padding:10px;
-  border:1px solid gold;
-  border-radius:10px;
+}
+
+.card{
   background:#111;
+  border:1px solid gold;
+  padding:15px;
+  border-radius:10px;
 }
 
 button{
-  padding:12px;
+  width:90%;
+  padding:10px;
   margin:5px;
-  width:80%;
   border:none;
-  border-radius:10px;
+  border-radius:8px;
   background:#222;
   color:white;
 }
@@ -43,49 +49,64 @@ button:active{
   background:gold;
   color:black;
   font-size:18px;
+  width:90%;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🎮 اختيار الفئات</h1>
+<h1>🎮 اختر الفئات</h1>
 
-<div class="section">
-<h3>الفئات</h3>
+<div class="grid">
 
-<button onclick="toggle(this,'kuwait')">🇰🇼 الكويت</button>
-<button onclick="toggle(this,'general')">🌍 معلومات عامة</button>
-<button onclick="toggle(this,'media')">📺 إعلام</button>
-<button onclick="toggle(this,'football')">⚽ كرة قدم كويتية</button>
-<button onclick="toggle(this,'arabi')">🟢 نادي العربي</button>
-<button onclick="toggle(this,'qadsia')">🟡 نادي القادسية</button>
+<div class="card">
+الكويت 🇰🇼
+<button onclick="pick('kuwait')">اختيار</button>
+</div>
+
+<div class="card">
+معلومات عامة 🌍
+<button onclick="pick('general')">اختيار</button>
+</div>
+
+<div class="card">
+إعلام 📺
+<button onclick="pick('media')">اختيار</button>
+</div>
+
+<div class="card">
+كرة قدم كويتية ⚽
+<button onclick="pick('football')">اختيار</button>
+</div>
+
+<div class="card">
+نادي العربي 🟢
+<button onclick="pick('arabi')">اختيار</button>
+</div>
+
+<div class="card">
+نادي القادسية 🟡
+<button onclick="pick('qadsia')">اختيار</button>
+</div>
 
 </div>
 
-<button class="start" onclick="startGame()">▶ لعب</button>
+<button class="start" onclick="go()">▶ بدء اللعب</button>
 
 <script>
-let selected = [];
+let cats=[];
 
-function toggle(btn,val){
-  if(selected.includes(val)){
-    selected = selected.filter(v=>v!==val);
-    btn.style.background="#222";
-    btn.style.color="white";
-  }else{
-    selected.push(val);
-    btn.style.background="gold";
-    btn.style.color="black";
-  }
+function pick(c){
+  if(!cats.includes(c)) cats.push(c);
 }
 
-function startGame(){
-  if(selected.length===0){
+function go(){
+  if(cats.length<1){
     alert("اختر فئة واحدة على الأقل");
     return;
   }
-  localStorage.setItem("cats",JSON.stringify(selected));
+  localStorage.setItem("cats",JSON.stringify(cats));
   location.href="game.html";
 }
 </script>
