@@ -9,7 +9,7 @@
 body{
   margin:0;
   font-family:Arial;
-  background: radial-gradient(circle,#000,#001a33);
+  background:#000814;
   color:white;
   text-align:center;
 }
@@ -19,33 +19,55 @@ body{
   color:black;
   padding:10px;
   font-weight:bold;
+  font-size:20px;
 }
 
-.grid{
+/* لوحة الفئات */
+.board{
   display:grid;
-  grid-template-columns: repeat(3,1fr);
-  gap:5px;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
   padding:10px;
+}
+
+.cat{
+  background:#111;
+  border:1px solid gold;
+  border-radius:8px;
+  padding:10px;
+  font-weight:bold;
 }
 
 .cell{
-  background:#111;
+  background:#003566;
   border:1px solid gold;
-  padding:15px;
+  padding:20px;
+  border-radius:6px;
   cursor:pointer;
+  font-size:18px;
 }
 
 .cell.used{
-  background:#333;
-  color:#666;
+  background:#222;
+  color:#555;
   pointer-events:none;
 }
 
-.panel{
-  margin:10px;
-  padding:10px;
-  background:#111;
-  border-radius:10px;
+/* شاشة السؤال */
+.questionScreen{
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  background:#000;
+  padding:20px;
+}
+
+.qBox{
+  margin-top:50px;
+  font-size:22px;
+  color:gold;
 }
 
 button{
@@ -62,40 +84,35 @@ button:active{
   background:gold;
   color:black;
 }
-
-#answerBox{
-  margin-top:10px;
-  color:gold;
-}
 </style>
 </head>
 
 <body>
 
-<div class="header">🎮 اقعد - مصحح</div>
+<div class="header">🎮 اقعد</div>
 
-<div class="grid" id="board"></div>
+<div class="board" id="board"></div>
 
-<div class="panel">
+<!-- شاشة السؤال -->
+<div class="questionScreen" id="screen">
 
-<div id="q"></div>
+  <div class="qBox" id="q"></div>
 
-<div id="answers"></div>
+  <div id="answers"></div>
 
-<div id="answerBox"></div>
+  <div id="result"></div>
 
 </div>
 
 <script>
 
 let turn="A";
-let currentCorrect=0;
-let answered=false;
+let used={};
 
 const Q = {
 kuwait:{
 200:{q:"عاصمة الكويت؟",a:["الكويت","دبي","الدوحة"],c:0},
-400:{q:"أشهر برج؟",a:["التحرير","برج خليفة","إيفل"],c:0}
+400:{q:"أشهر برج بالكويت؟",a:["التحرير","إيفل","خليفة"],c:0}
 },
 general:{
 200:{q:"كم كوكب؟",a:["8","9","7"],c:0},
@@ -103,51 +120,56 @@ general:{
 },
 flags:{
 200:{q:"علم اليابان؟",a:["شمس حمراء","نجمة","هلال"],c:0},
-400:{q:"علم فرنسا؟",a:["أزرق/أبيض/أحمر","أخضر","أسود"],c:0}
+400:{q:"علم فرنسا؟",a:["أزرق أبيض أحمر","أخضر","أسود"],c:0}
 }
 };
 
-let used={};
+let currentCorrect=0;
 
-function buildBoard(){
+function build(){
+
   let board=document.getElementById("board");
   board.innerHTML="";
 
   for(let cat in Q){
+
+    // اسم الفئة
+    let title=document.createElement("div");
+    title.className="cat";
+    title.innerText=cat;
+    board.appendChild(title);
+
     for(let points in Q[cat]){
 
       let key=cat+points;
 
-      let div=document.createElement("div");
-      div.className="cell";
-      div.innerText=cat+" "+points;
+      let cell=document.createElement("div");
+      cell.className="cell";
+      cell.innerText=points;
 
-      if(used[key]) div.classList.add("used");
+      if(used[key]) cell.classList.add("used");
 
-      div.onclick=()=>openQ(cat,points,key,div);
+      cell.onclick=()=>open(cat,points,key);
 
-      board.appendChild(div);
+      board.appendChild(cell);
     }
   }
 }
 
-function openQ(cat,points,key,cell){
+function open(cat,points,key){
 
   if(used[key]) return;
-
   used[key]=true;
-  answered=false;
-
-  currentCorrect = Q[cat][points].c;
 
   let qObj = Q[cat][points];
+  currentCorrect = qObj.c;
 
-  document.getElementById("q").innerText =
-  "Team "+turn+": "+qObj.q;
+  document.getElementById("screen").style.display="block";
+  document.getElementById("q").innerText="Team "+turn+" : "+qObj.q;
 
   let box=document.getElementById("answers");
   box.innerHTML="";
-  document.getElementById("answerBox").innerHTML="";
+  document.getElementById("result").innerHTML="";
 
   qObj.a.forEach((x,i)=>{
     let b=document.createElement("button");
@@ -156,27 +178,24 @@ function openQ(cat,points,key,cell){
     box.appendChild(b);
   });
 
-  cell.classList.add("used");
+  build();
 }
 
 function check(i,qObj){
 
-  if(answered) return;
-  answered=true;
-
-  let box=document.getElementById("answerBox");
-
-  box.innerHTML="✔ الإجابة الصحيحة: "+qObj.a[currentCorrect];
+  document.getElementById("result").innerHTML=
+  "✔ الإجابة الصحيحة: "+qObj.a[currentCorrect];
 
   let aBtn=document.createElement("button");
   let bBtn=document.createElement("button");
 
-  aBtn.innerText="Team A";
-  bBtn.innerText="Team B";
+  aBtn.innerText="Team A صح";
+  bBtn.innerText="Team B صح";
 
   aBtn.onclick=()=>give("A",i===currentCorrect);
   bBtn.onclick=()=>give("B",i===currentCorrect);
 
+  let box=document.getElementById("result");
   box.appendChild(document.createElement("br"));
   box.appendChild(aBtn);
   box.appendChild(bBtn);
@@ -185,17 +204,19 @@ function check(i,qObj){
 function give(team,correct){
 
   if(correct){
-    alert("✔ صح!");
+    alert("✔ صح");
   }else{
-    alert("✖ غلط!");
+    alert("✖ غلط");
   }
 
   turn = (turn==="A")?"B":"A";
 
-  buildBoard();
+  document.getElementById("screen").style.display="none";
+
+  build();
 }
 
-buildBoard();
+build();
 
 </script>
 
