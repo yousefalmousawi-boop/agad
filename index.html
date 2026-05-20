@@ -1,205 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
-<meta charset="UTF-8">
-<title>Seen Jeem TV Game</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: radial-gradient(circle at top, #001a33, #000);
-  color: white;
-  text-align: center;
-}
-
-.header {
-  padding: 15px;
-  background: linear-gradient(90deg, #002b5b, gold);
-  font-size: 22px;
-  font-weight: bold;
-}
-
-.section {
-  margin: 15px;
-  padding: 10px;
-}
-
-button {
-  padding: 12px;
-  margin: 6px;
-  border-radius: 10px;
-  border: none;
-  background: #222;
-  color: white;
-  width: 80%;
-}
-
-button:active {
-  background: gold;
-  color: black;
-}
-
-.card {
-  background: #111;
-  margin: 15px;
-  padding: 15px;
-  border-radius: 12px;
-}
-
-.teamBox {
-  display: flex;
-  justify-content: space-around;
-}
-
-.team {
-  background: #111;
-  border: 1px solid gold;
-  padding: 10px;
-  width: 40%;
-  border-radius: 10px;
-}
-
-#timer {
-  font-size: 22px;
-  color: red;
-}
-</style>
-</head>
-
-<body>
-
-<div class="header">🇰🇼 سين جيم TV - Choose Your Subjects</div>
-
-<!-- SETUP -->
-<div id="setup">
-
-<h3>Team A choose 3 subjects</h3>
-<button onclick="pickA('Kuwait')">Kuwait 🇰🇼</button>
-<button onclick="pickA('Sports')">Sports ⚽</button>
-<button onclick="pickA('Islam')">Islam 🕌</button>
-<button onclick="pickA('General')">General 🌍</button>
-
-<h3>Team B choose 3 subjects</h3>
-<button onclick="pickB('Kuwait')">Kuwait 🇰🇼</button>
-<button onclick="pickB('Sports')">Sports ⚽</button>
-<button onclick="pickB('Islam')">Islam 🕌</button>
-<button onclick="pickB('General')">General 🌍</button>
-
-<br><br>
-<button onclick="startGame()" style="background:gold;color:black;">START GAME</button>
-
-</div>
-
-<!-- GAME -->
-<div id="game" style="display:none">
-
-<div class="teamBox">
-  <div class="team">Team A<br><span id="a">0</span></div>
-  <div class="team">Team B<br><span id="b">0</span></div>
-</div>
-
-<div class="card">
-  <div id="subject"></div>
-  <div id="timer">10</div>
-  <div id="question"></div>
-  <div id="answers"></div>
-</div>
-
-</div>
-
-<script>
-
-let teamA = [];
-let teamB = [];
-
-let aScore = 0;
-let bScore = 0;
-let turn = "A";
-let time = 10;
-let interval;
-
-function pickA(sub) {
-  if (teamA.length < 3 && !teamA.includes(sub)) teamA.push(sub);
-}
-
-function pickB(sub) {
-  if (teamB.length < 3 && !teamB.includes(sub)) teamB.push(sub);
-}
-
-const Q = {
-  Kuwait: [
-    {q:"Capital of Kuwait?",a:["Kuwait City","Hawalli","Farwaniya"],c:0},
-  ],
-  Sports: [
-    {q:"Football players?",a:["11","9","12"],c:0},
-  ],
-  Islam: [
-    {q:"Daily prayers?",a:["3","5","6"],c:1},
-  ],
-  General: [
-    {q:"Earth is a?",a:["Planet","Star","Moon"],c:0},
-  ]
-};
-
-function startGame(){
-  document.getElementById("setup").style.display="none";
-  document.getElementById("game").style.display="block";
-  loadQ();
-}
-
-function loadQ(){
-  let subject = (turn==="A"?teamA:teamB)[Math.floor(Math.random()*3)];
-
-  let q = Q[subject][0];
-
-  document.getElementById("subject").innerText = "Subject: " + subject;
-  document.getElementById("question").innerText = "Team " + turn + ": " + q.q;
-
-  let box = document.getElementById("answers");
-  box.innerHTML = "";
-
-  q.a.forEach((ans,i)=>{
-    let b = document.createElement("button");
-    b.innerText = ans;
-    b.onclick = ()=>{
-      if(i===q.c){
-        if(turn==="A") aScore++;
-        else bScore++;
-      }
-      document.getElementById("a").innerText=aScore;
-      document.getElementById("b").innerText=bScore;
-      next();
-    };
-    box.appendChild(b);
-  });
-
-  startTimer();
-}
-
-function startTimer(){
-  clearInterval(interval);
-  time=10;
-  document.getElementById("timer").innerText=time;
-
-  interval=setInterval(()=>{
-    time--;
-    document.getElementById("timer").innerText=time;
-
-    if(time<=0){
-      next();
-    }
-  },1000);
-}
-
-function next(){
-  clearInterval(interval);
-  turn = (turn==="A")?"B":"A";
-  loadQ();
-}
-
-</script>
-
-</body>
-</html>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة سين جيم</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #111;
+            color: white;
+            text-align: center;
+            direction: rtl;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin: 20px 0;
+            color: gold;
+        }
+        .category-selection, .question-section {
+            margin: 30px;
+        }
+        .category-button, .answer-button {
+            display: block;
+            margin: 15px auto;
+            padding: 15px;
+            width: 60%;
+            background-color: #222
