@@ -37,15 +37,15 @@ body{
 
 .panel{
   margin:10px;
-  background:#111;
   padding:10px;
+  background:#111;
   border-radius:10px;
 }
 
 button{
   width:80%;
-  padding:10px;
   margin:5px;
+  padding:10px;
   border-radius:8px;
   border:none;
   background:#222;
@@ -57,21 +57,17 @@ button:active{
   color:black;
 }
 
-#timer{
-  font-size:25px;
-  color:red;
-}
-
-.img{
-  font-size:40px;
-  margin:10px;
+#answerBox{
+  margin-top:10px;
+  color:gold;
+  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">🎮 اقعد - TV Quiz</div>
+<div class="header">🎮 اقعد</div>
 
 <div class="score">
   <div class="box">A<br><span id="a">0</span></div>
@@ -79,12 +75,20 @@ button:active{
 </div>
 
 <div class="panel">
+
 <div id="cat"></div>
-<div class="img" id="img">📷</div>
-<div id="timer">60</div>
 <div id="q"></div>
+
+<div id="controls">
+<button onclick="pick(200)">200</button>
+<button onclick="pick(400)">400</button>
+<button onclick="pick(600)">600</button>
+</div>
+
 <div id="answers"></div>
-<div id="points"></div>
+
+<div id="answerBox"></div>
+
 </div>
 
 <script>
@@ -93,123 +97,104 @@ let cats = JSON.parse(localStorage.getItem("cats")||"[]");
 
 let a=0,b=0;
 let turn="A";
-let time=60;
-let selectedCat="";
-let selectedPoints=0;
-let interval;
 
-/* 📦 الأسئلة */
+let currentCat="";
+let currentPoints=0;
+
 const Q = {
- kuwait:{
- 200:{q:"عاصمة الكويت؟",a:["الكويت","الجبيل","دبي"],c:0,img:"🇰🇼"},
- 400:{q:"أشهر ميناء؟",a:["الشويخ","جدة","الدوحة"],c:0,img:"🚢"},
- 600:{q:"كم محافظة؟",a:["6","5","7"],c:0,img:"🏙️"}
- },
- general:{
- 200:{q:"كم كوكب؟",a:["8","9","7"],c:0,img:"🌍"},
- 400:{q:"أكبر قارة؟",a:["آسيا","أفريقيا","أوروبا"],c:0,img:"🌏"},
- 600:{q:"أطول نهر؟",a:["النيل","دجلة","الأمازون"],c:2,img:"🌊"}
- },
- media:{
- 200:{q:"الإعلام يعني؟",a:["صحافة","طب","رياضة"],c:0,img:"📺"},
- 400:{q:"أول صحيفة؟",a:["الرأي","الوطن","السياسة"],c:0,img:"📰"},
- 600:{q:"TV يعني؟",a:["تلفزيون","هاتف","كمبيوتر"],c:0,img:"📡"}
- },
- football:{
- 200:{q:"كم لاعب؟",a:["11","10","9"],c:0,img:"⚽"},
- 400:{q:"بطولة الكويت؟",a:["الدوري","كأس العالم","يويفا"],c:0,img:"🏆"},
- 600:{q:"أفضل نادي؟",a:["الكويت","العربي","كلهم"],c:0,img:"🔥"}
- },
- arabi:{
- 200:{q:"لون النادي؟",a:["أخضر","أحمر","أزرق"],c:0,img:"🟢"},
- 400:{q:"ملعبه؟",a:["جابر","الصداقة","المدينة"],c:1,img:"🏟️"},
- 600:{q:"تأسس؟",a:["1960","1950","1970"],c:0,img:"📅"}
- },
- qadsia:{
- 200:{q:"لون القادسية؟",a:["أصفر","أخضر","أزرق"],c:0,img:"🟡"},
- 400:{q:"ملعب؟",a:["جابر","الصداقة","الفحيحيل"],c:0,img:"🏟️"},
- 600:{q:"بطولات؟",a:["كثيرة","قليلة","صفر"],c:0,img:"🏆"}
- }
+kuwait:{
+200:{q:"عاصمة الكويت؟",a:["الكويت","دبي","الدوحة"],c:0},
+400:{q:"أشهر ميناء؟",a:["الشويخ","جدة","بيروت"],c:0},
+600:{q:"كم محافظة؟",a:["6","5","7"],c:0}
+},
+general:{
+200:{q:"كم كوكب؟",a:["8","9","7"],c:0},
+400:{q:"أكبر قارة؟",a:["آسيا","أوروبا","أفريقيا"],c:0},
+600:{q:"أطول نهر؟",a:["النيل","دجلة","الفرات"],c:0}
+},
+media:{
+200:{q:"الإعلام يعني؟",a:["صحافة","طب","هندسة"],c:0},
+400:{q:"TV اختصار؟",a:["تلفزيون","كمبيوتر","هاتف"],c:0},
+600:{q:"الصحف؟",a:["وسائل إعلام","رياضة","طب"],c:0}
+},
+football:{
+200:{q:"عدد اللاعبين؟",a:["11","10","9"],c:0},
+400:{q:"بطولة الكويت؟",a:["الدوري","كأس العالم","يويفا"],c:0},
+600:{q:"أفضل نادي؟",a:["الكويت","العربي","كلهم"],c:0}
+},
+arabi:{
+200:{q:"لون النادي؟",a:["أخضر","أحمر","أزرق"],c:0},
+400:{q:"ملعبه؟",a:["الصداقة","جابر","المدينة"],c:0},
+600:{q:"تأسس؟",a:["1960","1950","1970"],c:0}
+},
+qadsia:{
+200:{q:"لون القادسية؟",a:["أصفر","أخضر","أزرق"],c:0},
+400:{q:"ملعبه؟",a:["جابر","الصداقة","الفحيحيل"],c:0},
+600:{q:"بطولاته؟",a:["كثيرة","قليلة","صفر"],c:0}
+}
 };
 
-function pickCat(){
- selectedCat = cats[Math.floor(Math.random()*cats.length)];
- document.getElementById("cat").innerText = selectedCat.toUpperCase();
+function pick(points){
+  currentCat = cats[Math.floor(Math.random()*cats.length)];
+  currentPoints = points;
 
- showBoard();
-}
+  document.getElementById("cat").innerText="Category: "+currentCat;
 
-function showBoard(){
- let box = document.getElementById("answers");
- box.innerHTML="";
+  let q = Q[currentCat][points];
 
- [200,400,600].forEach(p=>{
-  let btn=document.createElement("button");
-  btn.innerText="اختيار "+p;
+  document.getElementById("q").innerText="Team "+turn+": "+q.q;
 
-  btn.onclick=()=>{
-    selectedPoints=p;
-    loadQ();
-  };
+  let box = document.getElementById("answers");
+  box.innerHTML="";
 
-  box.appendChild(btn);
- });
-}
+  document.getElementById("answerBox").innerHTML="";
 
-function loadQ(){
+  q.a.forEach((x,i)=>{
+    let b=document.createElement("button");
+    b.innerText=x;
 
- let q = Q[selectedCat][selectedPoints];
+    b.onclick=()=>check(i);
 
- document.getElementById("q").innerText="Team "+turn+": "+q.q;
- document.getElementById("img").innerText=q.img;
-
- let box=document.getElementById("answers");
- box.innerHTML="";
-
- q.a.forEach((x,i)=>{
-  let b=document.createElement("button");
-
-  b.innerText=x;
-  b.onclick=()=>check(i);
-
-  box.appendChild(b);
- });
-
- startTimer();
-}
-
-function startTimer(){
- clearInterval(interval);
- time=60;
- document.getElementById("timer").innerText=time;
-
- interval=setInterval(()=>{
-  time--;
-  document.getElementById("timer").innerText=time;
-  if(time<=0) next();
- },1000);
+    box.appendChild(b);
+  });
 }
 
 function check(i){
- let q = Q[selectedCat][selectedPoints];
+  let q = Q[currentCat][currentPoints];
 
- if(i===q.c){
-  if(turn==="A")a++; else b++;
- }
+  let box=document.getElementById("answerBox");
 
- document.getElementById("a").innerText=a;
- document.getElementById("b").innerText=b;
+  box.innerHTML="الإجابة الصحيحة: "+q.a[q.c];
 
- next();
+  let btnA=document.createElement("button");
+  btnA.innerText="Team A صح";
+
+  let btnB=document.createElement("button");
+  btnB.innerText="Team B صح";
+
+  btnA.onclick=()=>give("A",i===q.c);
+  btnB.onclick=()=>give("B",i===q.c);
+
+  box.appendChild(document.createElement("br"));
+  box.appendChild(btnA);
+  box.appendChild(btnB);
 }
 
-function next(){
- clearInterval(interval);
- turn = (turn==="A")?"B":"A";
- pickCat();
-}
+function give(team,correct){
+  if(correct){
+    if(team==="A")a+=currentPoints;
+    else b+=currentPoints;
+  }
 
-pickCat();
+  document.getElementById("a").innerText=a;
+  document.getElementById("b").innerText=b;
+
+  turn = (turn==="A")?"B":"A";
+
+  document.getElementById("answerBox").innerHTML="";
+
+  pick(currentPoints);
+}
 
 </script>
 
