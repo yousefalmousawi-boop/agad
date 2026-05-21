@@ -1,62 +1,548 @@
-function showTeams(index){
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGAD TV</title>
 
-const teamDiv=document.getElementById("teamBtns");
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#ececec;
+overflow-x:hidden;
+}
+
+/* TOP BAR */
+
+.topbar{
+background:linear-gradient(to right,#ff7b45,#ff3d3d);
+padding:15px;
+color:white;
+font-size:26px;
+font-weight:bold;
+text-align:center;
+position:sticky;
+top:0;
+z-index:999;
+box-shadow:0 2px 10px rgba(0,0,0,.2);
+}
+
+/* SCORE */
+
+.scoreboard{
+display:flex;
+justify-content:space-around;
+padding:15px;
+background:white;
+position:sticky;
+top:60px;
+z-index:999;
+}
+
+.team{
+background:#d50000;
+color:white;
+padding:12px 30px;
+border-radius:30px;
+font-size:22px;
+font-weight:bold;
+}
+
+/* CATEGORY GRID */
+
+.categories{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:15px;
+padding:15px;
+}
+
+.card{
+background:white;
+border-radius:22px;
+overflow:hidden;
+box-shadow:0 5px 15px rgba(0,0,0,.15);
+cursor:pointer;
+transition:.2s;
+}
+
+.card:active{
+transform:scale(.97);
+}
+
+.card img{
+width:100%;
+height:170px;
+object-fit:cover;
+}
+
+.cardTitle{
+background:#ff7b45;
+color:white;
+padding:15px;
+font-size:28px;
+font-weight:bold;
+text-align:center;
+}
+
+/* POINTS */
+
+.pointsScreen{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#f4f4f4;
+z-index:2000;
+overflow:auto;
+}
+
+.pointsHeader{
+background:#ff6a3d;
+padding:18px;
+color:white;
+font-size:30px;
+font-weight:bold;
+text-align:center;
+position:sticky;
+top:0;
+}
+
+.pointsGrid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
+padding:30px;
+}
+
+.point{
+background:white;
+height:120px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:40px;
+font-weight:bold;
+border-radius:25px;
+box-shadow:0 4px 10px rgba(0,0,0,.15);
+cursor:pointer;
+}
+
+.point.used{
+background:#777;
+color:#333;
+pointer-events:none;
+}
+
+/* QUESTION */
+
+.questionScreen{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:black;
+color:white;
+z-index:3000;
+padding:20px;
+text-align:center;
+overflow:auto;
+}
+
+.questionBox{
+margin-top:80px;
+font-size:38px;
+color:gold;
+}
+
+.answers{
+margin-top:40px;
+}
+
+.answer{
+background:#222;
+margin:15px auto;
+padding:20px;
+border-radius:20px;
+width:85%;
+font-size:28px;
+cursor:pointer;
+}
+
+.answer:active{
+background:gold;
+color:black;
+}
+
+/* TEAM BUTTONS */
+
+.teamBtns{
+margin-top:30px;
+}
+
+.teamBtn{
+background:#d50000;
+color:white;
+padding:15px 30px;
+border:none;
+border-radius:20px;
+font-size:25px;
+margin:10px;
+cursor:pointer;
+}
+
+/* WIN */
+
+.win{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:black;
+z-index:5000;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+color:white;
+}
+
+.win h1{
+font-size:70px;
+color:gold;
+}
+
+.restart{
+padding:20px 40px;
+font-size:30px;
+border:none;
+border-radius:20px;
+background:#ff7b45;
+color:white;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="topbar">📺 AGAD TV</div>
+
+<div class="scoreboard">
+
+<div class="team">
+<span id="teamAName"></span> :
+<span id="scoreA">0</span>
+</div>
+
+<div class="team">
+<span id="teamBName"></span> :
+<span id="scoreB">0</span>
+</div>
+
+</div>
+
+<!-- CATEGORIES -->
+
+<div class="categories" id="categories"></div>
+
+<!-- POINTS -->
+
+<div class="pointsScreen" id="pointsScreen">
+
+<div class="pointsHeader" id="pointsTitle"></div>
+
+<div class="pointsGrid" id="pointsGrid"></div>
+
+</div>
+
+<!-- QUESTION -->
+
+<div class="questionScreen" id="questionScreen">
+
+<div class="questionBox" id="questionText"></div>
+
+<div class="answers" id="answers"></div>
+
+<div class="teamBtns" id="teamBtns"></div>
+
+</div>
+
+<!-- WIN -->
+
+<div class="win" id="win">
+
+<h1 id="winnerText"></h1>
+
+<button class="restart" onclick="location.reload()">
+Play Again
+</button>
+
+</div>
+
+<script>
+
+/* TEAM NAMES */
+
+let teamA = prompt("Enter Team 1 Name") || "Team 1";
+let teamB = prompt("Enter Team 2 Name") || "Team 2";
+
+document.getElementById("teamAName").innerText = teamA;
+document.getElementById("teamBName").innerText = teamB;
+
+/* SCORES */
+
+let scoreA=0;
+let scoreB=0;
+
+const WIN=5;
+
+/* QUESTIONS */
+
+const data={
+
+"Flags":{
+img:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Flag_of_Japan.svg/320px-Flag_of_Japan.svg.png",
+q:{
+200:{
+question:"Which country is this flag from? 🇯🇵",
+answers:["Japan","China","Korea"],
+correct:0
+},
+400:{
+question:"Which country is this flag from? 🇫🇷",
+answers:["Italy","France","Russia"],
+correct:1
+},
+600:{
+question:"Which country is this flag from? 🇰🇼",
+answers:["Kuwait","Iraq","UAE"],
+correct:0
+}
+}
+},
+
+"Cars":{
+img:"https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop",
+q:{
+200:{
+question:"Who makes the Wrangler?",
+answers:["Jeep","Toyota","BMW"],
+correct:0
+},
+400:{
+question:"Fastest car brand?",
+answers:["Bugatti","Toyota","Honda"],
+correct:0
+},
+600:{
+question:"Who makes Land Cruiser?",
+answers:["Ford","Toyota","Kia"],
+correct:1
+}
+}
+},
+
+"Geography":{
+img:"https://images.unsplash.com/photo-1526778548025-fa2f459cd5ce?q=80&w=1200&auto=format&fit=crop",
+q:{
+200:{
+question:"Largest continent?",
+answers:["Europe","Asia","Africa"],
+correct:1
+},
+400:{
+question:"Capital of Saudi Arabia?",
+answers:["Riyadh","Jeddah","Dammam"],
+correct:0
+},
+600:{
+question:"Longest river?",
+answers:["Nile","Amazon","Tigris"],
+correct:0
+}
+}
+},
+
+"Quran":{
+img:"https://images.unsplash.com/photo-1542810634-71277d95dcbb?q=80&w=1200&auto=format&fit=crop",
+q:{
+200:{
+question:"How many parts are in the Quran?",
+answers:["30","20","50"],
+correct:0
+},
+400:{
+question:"How many surahs are in the Quran?",
+answers:["114","100","90"],
+correct:0
+},
+600:{
+question:"First surah in Quran?",
+answers:["Fatiha","Baqarah","Ikhlas"],
+correct:0
+}
+}
+}
+
+};
+
+let currentQuestion=null;
+let used={};
+
+/* BUILD CATEGORIES */
+
+const categoriesDiv=document.getElementById("categories");
+
+for(let cat in data){
+
+const card=document.createElement("div");
+
+card.className="card";
+
+card.innerHTML=`
+<img src="${data[cat].img}">
+<div class="cardTitle">${cat}</div>
+`;
+
+card.onclick=()=>openCategory(cat);
+
+categoriesDiv.appendChild(card);
+
+}
+
+/* OPEN CATEGORY */
+
+function openCategory(cat){
+
+document.getElementById("pointsScreen").style.display="block";
+
+document.getElementById("pointsTitle").innerText=cat;
+
+const grid=document.getElementById("pointsGrid");
+
+grid.innerHTML="";
+
+[200,400,600].forEach(p=>{
+
+const point=document.createElement("div");
+
+point.className="point";
+
+point.innerText=p;
+
+const key=cat+p;
+
+if(used[key]) point.classList.add("used");
+
+point.onclick=()=>openQuestion(cat,p,key);
+
+grid.appendChild(point);
+
+});
+
+}
+
+/* OPEN QUESTION */
+
+function openQuestion(cat,p,key){
+
+used[key]=true;
+
+currentQuestion=data[cat].q[p];
+
+document.getElementById("questionScreen").style.display="block";
+
+document.getElementById("questionText").innerText=currentQuestion.question;
+
+const answersDiv=document.getElementById("answers");
+
+answersDiv.innerHTML="";
+
+document.getElementById("teamBtns").innerHTML="";
+
+currentQuestion.answers.forEach((a,i)=>{
+
+const btn=document.createElement("div");
+
+btn.className="answer";
+
+btn.innerText=a;
+
+btn.onclick=()=>showTeams(i);
+
+answersDiv.appendChild(btn);
+
+});
+
+}
+
+/* SHOW WHO GOT IT */
+
+function showTeams(index){
 
 let correct =
 (index===currentQuestion.correct);
 
-teamDiv.innerHTML=`
+document.getElementById("teamBtns").innerHTML=`
 
 <h2 style="
 color:${correct ? 'lime' : 'red'};
-font-size:40px;
-margin-top:20px;
+font-size:45px;
 ">
 
-${correct ? '✅ إجابة صحيحة' : '❌ إجابة غلط'}
+${correct ? '✅ CORRECT' : '❌ WRONG'}
 
 </h2>
 
 <div style="
 font-size:30px;
-margin:20px;
 color:gold;
+margin:20px;
 ">
-الإجابة الصحيحة:
+Correct Answer:
 ${currentQuestion.answers[currentQuestion.correct]}
 </div>
 
 <div style="
-font-size:25px;
+font-size:28px;
 margin-bottom:20px;
 ">
-منو جاوب صح؟
+Who answered correctly?
 </div>
 
 <button class="teamBtn"
 onclick="givePoint('A',${correct})">
 
-Team A
+${teamA}
 </button>
 
 <button class="teamBtn"
 onclick="givePoint('B',${correct})">
 
-Team B
+${teamB}
 </button>
 
 <button class="teamBtn"
 style="background:#555"
 onclick="closeQuestion()">
 
-ولا فريق
+Nobody
 </button>
 
 `;
 
 }
 
-/* إعطاء النقاط */
+/* GIVE POINT */
 
 function givePoint(team,correct){
 
@@ -80,12 +566,32 @@ showWinner();
 
 }
 
-/* إغلاق السؤال */
+/* CLOSE QUESTION */
 
 function closeQuestion(){
 
 document.getElementById("questionScreen").style.display="none";
 
-document.getElementById("teamBtns").innerHTML="";
+document.getElementById("pointsScreen").style.display="none";
 
 }
+
+/* WINNER */
+
+function showWinner(){
+
+document.getElementById("win").style.display="flex";
+
+document.getElementById("winnerText").innerText=
+(scoreA>scoreB)
+?
+"🏆 "+teamA+" Won!"
+:
+"🏆 "+teamB+" Won!";
+
+}
+
+</script>
+
+</body>
+</html>
