@@ -1,325 +1,513 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>اقعد TV</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اقعد TV</title>
 
 <style>
+
 body{
-  margin:0;
-  font-family:Arial;
-  background:#000814;
-  color:white;
-  text-align:center;
-  overflow:hidden;
+margin:0;
+font-family:Arial;
+background:#ececec;
 }
 
-.header{
-  background:gold;
-  color:black;
-  padding:10px;
-  font-weight:bold;
-  font-size:20px;
+/* الشريط العلوي */
+.topbar{
+background:linear-gradient(to left,#ff7b45,#ff3d3d);
+padding:15px;
+color:white;
+font-size:24px;
+font-weight:bold;
+text-align:center;
+position:sticky;
+top:0;
+z-index:999;
+box-shadow:0 2px 10px rgba(0,0,0,.2);
 }
 
-.score{
-  display:flex;
-  justify-content:space-around;
-  padding:10px;
+/* النقاط */
+.scoreboard{
+display:flex;
+justify-content:space-around;
+padding:15px;
+background:white;
+position:sticky;
+top:58px;
+z-index:999;
 }
 
-.box{
-  background:#111;
-  border:1px solid gold;
-  padding:10px;
-  width:40%;
+.team{
+background:#d50000;
+color:white;
+padding:12px 30px;
+border-radius:30px;
+font-size:22px;
+font-weight:bold;
 }
 
-/* اللوحة */
-.board{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:6px;
-  padding:10px;
+/* الفئات */
+.categories{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:15px;
+padding:15px;
 }
 
-.cat{
-  background:#111;
-  border:1px solid gold;
-  padding:8px;
-  color:gold;
-  font-weight:bold;
+.card{
+background:white;
+border-radius:22px;
+overflow:hidden;
+box-shadow:0 5px 15px rgba(0,0,0,.15);
+transition:.2s;
+cursor:pointer;
 }
 
-.cell{
-  background:#003566;
-  border:1px solid gold;
-  padding:18px;
-  cursor:pointer;
+.card:active{
+transform:scale(.97);
 }
 
-.cell.used{
-  background:#222;
-  color:#555;
-  pointer-events:none;
+.card img{
+width:100%;
+height:170px;
+object-fit:cover;
+background:#dcecff;
+}
+
+.cardTitle{
+background:#ff7b45;
+color:white;
+padding:15px;
+font-size:28px;
+font-weight:bold;
+text-align:center;
+}
+
+/* شاشة النقاط */
+.pointsScreen{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#f4f4f4;
+z-index:2000;
+overflow:auto;
+}
+
+.pointsHeader{
+background:#ff6a3d;
+padding:18px;
+color:white;
+font-size:28px;
+font-weight:bold;
+text-align:center;
+position:sticky;
+top:0;
+}
+
+.pointsGrid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
+padding:30px;
+}
+
+.point{
+background:white;
+height:120px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:40px;
+font-weight:bold;
+border-radius:25px;
+box-shadow:0 4px 10px rgba(0,0,0,.15);
+cursor:pointer;
+}
+
+.point.used{
+background:#777;
+color:#333;
+pointer-events:none;
 }
 
 /* شاشة السؤال */
-.screen{
-  position:fixed;
-  top:0;left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.95);
-  display:none;
-  padding:20px;
+.questionScreen{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:black;
+color:white;
+z-index:3000;
+padding:20px;
+text-align:center;
 }
 
-.q{
-  margin-top:40px;
-  color:gold;
-  font-size:22px;
+.questionBox{
+margin-top:80px;
+font-size:38px;
+color:gold;
 }
 
-/* فوز */
+.answers{
+margin-top:40px;
+}
+
+.answer{
+background:#222;
+margin:15px auto;
+padding:20px;
+border-radius:20px;
+width:85%;
+font-size:28px;
+cursor:pointer;
+}
+
+.answer:active{
+background:gold;
+color:black;
+}
+
+/* اختيار الفريق */
+.teamBtns{
+margin-top:30px;
+}
+
+.teamBtn{
+background:#d50000;
+color:white;
+padding:15px 30px;
+border:none;
+border-radius:20px;
+font-size:25px;
+margin:10px;
+cursor:pointer;
+}
+
+/* الفوز */
 .win{
-  position:fixed;
-  top:0;left:0;
-  width:100%;
-  height:100%;
-  background:black;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:black;
+z-index:5000;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+color:white;
 }
 
 .win h1{
-  color:gold;
-  font-size:40px;
-  animation:pop 1s infinite alternate;
+font-size:70px;
+color:gold;
 }
 
-@keyframes pop{
-  from{transform:scale(1);}
-  to{transform:scale(1.1);}
+.restart{
+padding:20px 40px;
+font-size:30px;
+border:none;
+border-radius:20px;
+background:#ff7b45;
+color:white;
 }
 
-/* كونفيتي */
-.confetti{
-  position:fixed;
-  width:100%;
-  height:100%;
-  pointer-events:none;
-}
 </style>
 </head>
 
 <body>
 
-<div class="header">📺 اقعد TV</div>
+<div class="topbar">📺 اقعد TV</div>
 
-<div class="score">
-  <div class="box">A: <span id="a">0</span></div>
-  <div class="box">B: <span id="b">0</span></div>
+<div class="scoreboard">
+<div class="team">A : <span id="scoreA">0</span></div>
+<div class="team">B : <span id="scoreB">0</span></div>
 </div>
 
-<div class="board" id="board"></div>
+<!-- الفئات -->
+<div class="categories" id="categories"></div>
 
-<div class="screen" id="screen">
-  <div class="q" id="q"></div>
-  <div id="answers"></div>
-  <div id="result"></div>
+<!-- شاشة النقاط -->
+<div class="pointsScreen" id="pointsScreen">
+
+<div class="pointsHeader" id="pointsTitle"></div>
+
+<div class="pointsGrid" id="pointsGrid"></div>
+
 </div>
 
+<!-- السؤال -->
+<div class="questionScreen" id="questionScreen">
+
+<div class="questionBox" id="questionText"></div>
+
+<div class="answers" id="answers"></div>
+
+<div class="teamBtns" id="teamBtns"></div>
+
+</div>
+
+<!-- الفوز -->
 <div class="win" id="win">
-  <h1 id="winner"></h1>
-  <button onclick="location.reload()">إعادة اللعب</button>
-</div>
 
-<canvas class="confetti" id="confetti"></canvas>
+<h1 id="winnerText"></h1>
+
+<button class="restart" onclick="location.reload()">
+إعادة اللعب
+</button>
+
+</div>
 
 <script>
 
-let a=0,b=0;
-let turn="A";
-let used={};
-let currentCorrect=0;
+/* النقاط */
+let scoreA=0;
+let scoreB=0;
 const WIN=5;
 
-/* 🔊 صوت */
-function sound(type){
-  let ctx=new (window.AudioContext||window.webkitAudioContext)();
-  let o=ctx.createOscillator();
-  o.type="sine";
-  o.frequency.value = type==="win"?800:300;
-  o.connect(ctx.destination);
-  o.start();
-  setTimeout(()=>o.stop(),150);
+/* الأسئلة */
+const data={
+
+"أعلام":{
+img:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Flag_of_Japan.svg/320px-Flag_of_Japan.svg.png",
+q:{
+200:{
+question:"علم أي دولة هذا؟ 🇯🇵",
+answers:["اليابان","كوريا","الصين"],
+correct:0
+},
+400:{
+question:"علم أي دولة هذا؟ 🇫🇷",
+answers:["إيطاليا","فرنسا","روسيا"],
+correct:1
+},
+600:{
+question:"علم أي دولة هذا؟ 🇰🇼",
+answers:["الكويت","العراق","الإمارات"],
+correct:0
+}
+}
+},
+
+"سيارات":{
+img:"https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop",
+q:{
+200:{
+question:"شركة تصنع الجيب رانجلر؟",
+answers:["تويوتا","جيب","كيا"],
+correct:1
+},
+400:{
+question:"أسرع سيارة بالعالم؟",
+answers:["بوغاتي","كامري","سوناتا"],
+correct:0
+},
+600:{
+question:"شركة لاندكروزر؟",
+answers:["فورد","تويوتا","BMW"],
+correct:1
+}
+}
+},
+
+"جغرافيا":{
+img:"https://images.unsplash.com/photo-1526778548025-fa2f459cd5ce?q=80&w=1200&auto=format&fit=crop",
+q:{
+200:{
+question:"أكبر قارة؟",
+answers:["أوروبا","آسيا","أفريقيا"],
+correct:1
+},
+400:{
+question:"أطول نهر؟",
+answers:["النيل","الفرات","التايمز"],
+correct:0
+},
+600:{
+question:"عاصمة السعودية؟",
+answers:["الرياض","جدة","الدمام"],
+correct:0
+}
+}
+},
+
+"قصص الأنبياء":{
+img:"https://images.unsplash.com/photo-1542810634-71277d95dcbb?q=80&w=1200&auto=format&fit=crop",
+q:{
+200:{
+question:"النبي الذي ابتلعه الحوت؟",
+answers:["يونس","موسى","إبراهيم"],
+correct:0
+},
+400:{
+question:"أبو الأنبياء؟",
+answers:["يوسف","إبراهيم","عيسى"],
+correct:1
+},
+600:{
+question:"كم سفينة صنع نوح؟",
+answers:["1","2","5"],
+correct:0
+}
+}
 }
 
-/* البيانات */
-const Q = {
-kuwait:{
-200:{q:"عاصمة الكويت؟",a:["الكويت","دبي","الدوحة"],c:0},
-400:{q:"أشهر برج؟",a:["التحرير","خليفة","إيفل"],c:0}
-},
-general:{
-200:{q:"كم كوكب؟",a:["8","9","7"],c:0},
-400:{q:"أكبر قارة؟",a:["آسيا","أوروبا","أفريقيا"],c:0}
-},
-flags:{
-200:{q:"علم اليابان؟",a:["شمس","نجمة","هلال"],c:0},
-400:{q:"علم فرنسا؟",a:["أزرق أبيض أحمر","أخضر","أسود"],c:0}
-}
 };
 
-/* بناء اللوحة */
-function build(){
-  let board=document.getElementById("board");
-  board.innerHTML="";
+let currentCategory="";
+let currentQuestion=null;
+let used={};
 
-  for(let cat in Q){
+/* بناء الفئات */
 
-    let t=document.createElement("div");
-    t.className="cat";
-    t.innerText=cat;
-    board.appendChild(t);
+const categoriesDiv=document.getElementById("categories");
 
-    for(let p in Q[cat]){
+for(let cat in data){
 
-      let key=cat+p;
+const card=document.createElement("div");
+card.className="card";
 
-      let c=document.createElement("div");
-      c.className="cell";
-      c.innerText=p;
+card.innerHTML=`
+<img src="${data[cat].img}">
+<div class="cardTitle">${cat}</div>
+`;
 
-      if(used[key]) c.classList.add("used");
+card.onclick=()=>openCategory(cat);
 
-      c.onclick=()=>open(cat,p,key);
+categoriesDiv.appendChild(card);
 
-      board.appendChild(c);
-    }
-  }
 }
 
-/* فتح السؤال */
-function open(cat,p,key){
+/* فتح الفئة */
 
-  if(used[key]) return;
-  used[key]=true;
+function openCategory(cat){
 
-  let qObj=Q[cat][p];
-  currentCorrect=qObj.c;
+currentCategory=cat;
 
-  document.getElementById("screen").style.display="block";
-  document.getElementById("q").innerText="Team "+turn+" : "+qObj.q;
+document.getElementById("pointsScreen").style.display="block";
 
-  let box=document.getElementById("answers");
-  box.innerHTML="";
-  document.getElementById("result").innerHTML="";
+document.getElementById("pointsTitle").innerText=cat;
 
-  qObj.a.forEach((x,i)=>{
-    let b=document.createElement("button");
-    b.innerText=x;
-    b.onclick=()=>check(i,qObj);
-    box.appendChild(b);
-  });
+const grid=document.getElementById("pointsGrid");
 
-  build();
+grid.innerHTML="";
+
+[200,400,600].forEach(p=>{
+
+const point=document.createElement("div");
+
+point.className="point";
+
+point.innerText=p;
+
+const key=cat+p;
+
+if(used[key]) point.classList.add("used");
+
+point.onclick=()=>openQuestion(cat,p,key);
+
+grid.appendChild(point);
+
+});
+
 }
 
-/* التحقق */
-function check(i,qObj){
+/* السؤال */
 
-  document.getElementById("result").innerHTML=
-  "✔ الصحيح: "+qObj.a[currentCorrect];
+function openQuestion(cat,p,key){
 
-  let aBtn=document.createElement("button");
-  let bBtn=document.createElement("button");
+used[key]=true;
 
-  aBtn.innerText="Team A";
-  bBtn.innerText="Team B";
+currentQuestion=data[cat].q[p];
 
-  aBtn.onclick=()=>give("A",i===currentCorrect);
-  bBtn.onclick=()=>give("B",i===currentCorrect);
+document.getElementById("questionScreen").style.display="block";
+
+document.getElementById("questionText").innerText=currentQuestion.question;
+
+const answersDiv=document.getElementById("answers");
+
+answersDiv.innerHTML="";
+
+currentQuestion.answers.forEach((a,i)=>{
+
+const btn=document.createElement("div");
+
+btn.className="answer";
+
+btn.innerText=a;
+
+btn.onclick=()=>showTeams(i);
+
+answersDiv.appendChild(btn);
+
+});
+
 }
 
-/* إعطاء النقاط */
-function give(team,correct){
+/* اختيار الفريق */
 
-  sound(correct?"win":"");
+function showTeams(index){
 
-  if(correct){
-    if(team==="A")a++;
-    else b++;
-  }
+document.getElementById("teamBtns").innerHTML=`
 
-  document.getElementById("a").innerText=a;
-  document.getElementById("b").innerText=b;
+<button class="teamBtn" onclick="givePoint('A',${index})">
+Team A
+</button>
 
-  document.getElementById("screen").style.display="none";
+<button class="teamBtn" onclick="givePoint('B',${index})">
+Team B
+</button>
 
-  turn=(turn==="A")?"B":"A";
+`;
 
-  if(a>=WIN || b>=WIN){
-    end();
-    return;
-  }
+}
 
-  build();
+/* إعطاء النقطة */
+
+function givePoint(team,index){
+
+if(index===currentQuestion.correct){
+
+if(team==="A") scoreA++;
+else scoreB++;
+
+}
+
+document.getElementById("scoreA").innerText=scoreA;
+document.getElementById("scoreB").innerText=scoreB;
+
+document.getElementById("questionScreen").style.display="none";
+
+if(scoreA>=WIN || scoreB>=WIN){
+
+showWinner();
+
+}
+
 }
 
 /* الفوز */
-function end(){
 
-  sound("win");
+function showWinner(){
 
-  let w = (a>b) ? "🏆 Team A فاز!" : "🏆 Team B فاز!";
+document.getElementById("win").style.display="flex";
 
-  document.getElementById("winner").innerText=w;
-  document.getElementById("win").style.display="flex";
+document.getElementById("winnerText").innerText=
+(scoreA>scoreB)
+?
+"🏆 Team A فاز!"
+:
+"🏆 Team B فاز!";
 
-  confetti();
 }
-
-/* كونفيتي بسيط */
-function confetti(){
-  let c=document.getElementById("confetti");
-  let ctx=c.getContext("2d");
-  c.width=window.innerWidth;
-  c.height=window.innerHeight;
-
-  let pieces=[];
-
-  for(let i=0;i<100;i++){
-    pieces.push({
-      x:Math.random()*c.width,
-      y:Math.random()*c.height,
-      r:Math.random()*6
-    });
-  }
-
-  function draw(){
-    ctx.clearRect(0,0,c.width,c.height);
-    ctx.fillStyle="gold";
-
-    pieces.forEach(p=>{
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fill();
-      p.y+=2;
-      if(p.y>c.height)p.y=0;
-    });
-
-    requestAnimationFrame(draw);
-  }
-
-  draw();
-}
-
-build();
 
 </script>
 
