@@ -1,36 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
-<title>AGAD TV Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGAD TV</title>
 
 <style>
+
 body{
 margin:0;
 font-family:Arial;
 background:#ececec;
+overflow-x:hidden;
 }
 
-/* TOP */
+/* TOP BAR */
 .topbar{
 background:linear-gradient(to right,#ff7b45,#ff3d3d);
-color:white;
 padding:15px;
-font-size:24px;
-text-align:center;
+color:white;
+font-size:26px;
 font-weight:bold;
+text-align:center;
+position:sticky;
+top:0;
+z-index:999;
+box-shadow:0 2px 10px rgba(0,0,0,.2);
 }
 
+/* SCORE */
 .scoreboard{
 display:flex;
 justify-content:space-around;
-padding:10px;
+padding:15px;
 background:white;
-font-size:20px;
+position:sticky;
+top:60px;
+z-index:999;
 }
 
-/* CATEGORIES */
-.grid{
+.team{
+background:#d50000;
+color:white;
+padding:12px 30px;
+border-radius:30px;
+font-size:22px;
+font-weight:bold;
+}
+
+/* CATEGORY GRID */
+.categories{
 display:grid;
 grid-template-columns:repeat(2,1fr);
 gap:15px;
@@ -39,47 +58,127 @@ padding:15px;
 
 .card{
 background:white;
-padding:20px;
-text-align:center;
-font-size:22px;
-border-radius:15px;
+border-radius:22px;
+overflow:hidden;
+box-shadow:0 5px 15px rgba(0,0,0,.15);
 cursor:pointer;
 }
 
-/* SCREEN */
-.screen{
+.card img{
+width:100%;
+height:170px;
+object-fit:cover;
+}
+
+.cardTitle{
+background:#ff7b45;
+color:white;
+padding:15px;
+font-size:28px;
+font-weight:bold;
+text-align:center;
+}
+
+/* POINTS */
+.pointsScreen{
 display:none;
 position:fixed;
 top:0;
 left:0;
 width:100%;
 height:100%;
-background:#000;
-color:white;
-padding:20px;
+background:#f4f4f4;
+z-index:2000;
+overflow:auto;
 }
 
-.big{
+.pointsHeader{
+background:#ff6a3d;
+padding:18px;
+color:white;
 font-size:30px;
-margin-top:50px;
+font-weight:bold;
 text-align:center;
 }
 
-.btn{
-display:block;
-margin:10px auto;
-padding:15px;
-font-size:20px;
-width:80%;
+.backBtn{
+margin-top:10px;
+padding:10px 20px;
 border:none;
 border-radius:10px;
+font-size:18px;
+cursor:pointer;
+background:white;
+}
+
+/* GRID */
+.pointsGrid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
+padding:30px;
+}
+
+.point{
+background:white;
+height:120px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:40px;
+font-weight:bold;
+border-radius:25px;
+box-shadow:0 4px 10px rgba(0,0,0,.15);
 cursor:pointer;
 }
 
-.green{background:lime;}
-.red{background:red;}
-.gray{background:#555;}
-.gold{background:gold;color:black;}
+.point.used{
+background:#777;
+pointer-events:none;
+}
+
+/* QUESTION */
+.questionScreen{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:black;
+color:white;
+z-index:3000;
+padding:20px;
+text-align:center;
+}
+
+.questionBox{
+margin-top:80px;
+font-size:38px;
+color:gold;
+}
+
+.answer{
+background:#222;
+margin:15px auto;
+padding:20px;
+border-radius:20px;
+width:85%;
+font-size:28px;
+cursor:pointer;
+}
+
+.teamBtn{
+background:#d50000;
+color:white;
+padding:15px 30px;
+border:none;
+border-radius:20px;
+font-size:25px;
+margin:10px;
+cursor:pointer;
+}
+
 </style>
 </head>
 
@@ -88,93 +187,190 @@ cursor:pointer;
 <div class="topbar">📺 AGAD TV</div>
 
 <div class="scoreboard">
-<div id="a"></div>
-<div id="b"></div>
+<div class="team">
+<span id="teamAName"></span> :
+<span id="scoreA">0</span>
+</div>
+
+<div class="team">
+<span id="teamBName"></span> :
+<span id="scoreB">0</span>
+</div>
 </div>
 
 <!-- CATEGORIES -->
-<div class="grid" id="grid"></div>
+<div class="categories" id="categories"></div>
+
+<!-- POINTS -->
+<div class="pointsScreen" id="pointsScreen">
+
+<div class="pointsHeader" id="pointsTitle"></div>
+
+<button class="backBtn" onclick="closePoints()">⬅ Back</button>
+
+<div class="pointsGrid" id="pointsGrid"></div>
+</div>
 
 <!-- QUESTION -->
-<div class="screen" id="qScreen">
-<div class="big" id="question"></div>
+<div class="questionScreen" id="questionScreen">
 
-<button class="btn gold" onclick="showAnswer()">Show Answer</button>
+<div class="questionBox" id="questionText"></div>
 
-<div id="answerBox" style="text-align:center;margin-top:20px;"></div>
+<div id="answers"></div>
 
-<div id="who" style="margin-top:20px;"></div>
+<div id="teamBtns"></div>
 
-<button class="btn gray" onclick="finish()">Finish</button>
 </div>
 
 <script>
 
-let teamA = localStorage.getItem("teamA") || "Team 1";
-let teamB = localStorage.getItem("teamB") || "Team 2";
+/* TEAMS */
+let teamA = prompt("Enter Team 1 Name") || "Team 1";
+let teamB = prompt("Enter Team 2 Name") || "Team 2";
 
+document.getElementById("teamAName").innerText = teamA;
+document.getElementById("teamBName").innerText = teamB;
+
+/* SCORE */
 let scoreA = 0;
 let scoreB = 0;
 
-document.getElementById("a").innerText = teamA + ": 0";
-document.getElementById("b").innerText = teamB + ": 0";
+/* WIN */
+const WIN = 5;
 
+/* DATA */
 const data = {
-"Cars":"Who makes the Wrangler? Jeep",
-"Flags":"What country is 🇯🇵? Japan",
-"Geography":"What is largest continent? Asia"
+"Flags":{
+img:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Flag_of_Japan.svg/320px-Flag_of_Japan.svg.png",
+q:{
+200:{question:"Which country is this flag? 🇯🇵",answer:"Japan"},
+400:{question:"Which country is this flag? 🇫🇷",answer:"France"},
+600:{question:"Which country is this flag? 🇰🇼",answer:"Kuwait"}
+}
+},
+"Cars":{
+img:"https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200",
+q:{
+200:{question:"Who makes Wrangler?",answer:"Jeep"},
+400:{question:"Fastest car brand?",answer:"Bugatti"},
+600:{question:"Who makes Land Cruiser?",answer:"Toyota"}
+}
+},
+"Geography":{
+img:"https://images.unsplash.com/photo-1526778548025-fa2f459cd5ce",
+q:{
+200:{question:"Largest continent?",answer:"Asia"},
+400:{question:"Capital of Saudi Arabia?",answer:"Riyadh"},
+600:{question:"Longest river?",answer:"Nile"}
+}
+}
 };
 
+let used = {};
+let current = null;
 let currentAnswer = "";
-let chosenTeam = "";
 
-/* BUILD */
-let grid = document.getElementById("grid");
+/* BUILD CATEGORIES */
+const categoriesDiv = document.getElementById("categories");
 
-for(let c in data){
+for(let cat in data){
+let card = document.createElement("div");
+card.className = "card";
+
+card.innerHTML = `
+<img src="${data[cat].img}">
+<div class="cardTitle">${cat}</div>
+`;
+
+card.onclick = ()=>openCategory(cat);
+categoriesDiv.appendChild(card);
+}
+
+/* OPEN CATEGORY */
+function openCategory(cat){
+document.getElementById("pointsScreen").style.display = "block";
+document.getElementById("pointsTitle").innerText = cat;
+
+let grid = document.getElementById("pointsGrid");
+grid.innerHTML = "";
+
+[200,400,600].forEach(p=>{
+
+let key = cat+p;
+
 let div = document.createElement("div");
-div.className = "card";
-div.innerText = c;
+div.className = "point";
+div.innerText = p;
 
-div.onclick = () => openQuestion(c);
+if(used[key]) div.classList.add("used");
+
+div.onclick = ()=>openQuestion(cat,p,key);
 
 grid.appendChild(div);
+});
 }
 
-function openQuestion(cat){
-document.getElementById("qScreen").style.display = "block";
-document.getElementById("question").innerText = data[cat].split("?")[0] + "?";
-currentAnswer = data[cat].split(" ")[data[cat].split(" ").length-1];
-
-document.getElementById("answerBox").innerText = "";
-document.getElementById("who").innerHTML = "";
-chosenTeam = "";
+/* CLOSE POINTS */
+function closePoints(){
+document.getElementById("pointsScreen").style.display = "none";
 }
 
-function showAnswer(){
-document.getElementById("answerBox").innerHTML =
-"Answer: " + currentAnswer + "<br><br>";
+/* QUESTION */
+function openQuestion(cat,p,key){
 
-document.getElementById("who").innerHTML = `
-<button class="btn green" onclick="pick('A')">${teamA}</button>
-<button class="btn green" onclick="pick('B')">${teamB}</button>
-<button class="btn red" onclick="pick('N')">Nobody</button>
+used[key] = true;
+
+current = data[cat].q[p];
+currentAnswer = current.answer;
+
+document.getElementById("questionScreen").style.display = "block";
+document.getElementById("questionText").innerText = current.question;
+
+document.getElementById("answers").innerHTML = `
+<div class="answer">Answer hidden</div>
+<button class="teamBtn" onclick="showTeams()">Show Answer</button>
+`;
+
+document.getElementById("teamBtns").innerHTML = "";
+}
+
+/* SHOW ANSWER */
+function showTeams(){
+
+document.getElementById("answers").innerHTML = `
+<div class="answer">✔ ${currentAnswer}</div>
+`;
+
+document.getElementById("teamBtns").innerHTML = `
+<button class="teamBtn" onclick="give('A')">${teamA}</button>
+<button class="teamBtn" onclick="give('B')">${teamB}</button>
+<button class="teamBtn" onclick="give('N')">Nobody</button>
+<button class="teamBtn" onclick="finish()">Finish</button>
 `;
 }
 
-function pick(t){
-chosenTeam = t;
+/* GIVE POINT */
+function give(t){
+
+if(t==="A") scoreA++;
+if(t==="B") scoreB++;
+
+document.getElementById("scoreA").innerText = scoreA;
+document.getElementById("scoreB").innerText = scoreB;
+
 }
 
+/* FINISH */
 function finish(){
 
-if(chosenTeam === "A") scoreA++;
-if(chosenTeam === "B") scoreB++;
+document.getElementById("questionScreen").style.display = "none";
+document.getElementById("pointsScreen").style.display = "block";
 
-document.getElementById("a").innerText = teamA + ": " + scoreA;
-document.getElementById("b").innerText = teamB + ": " + scoreB;
+if(scoreA>=WIN || scoreB>=WIN){
+alert(scoreA>scoreB ? teamA+" wins!" : teamB+" wins!");
+location.reload();
+}
 
-document.getElementById("qScreen").style.display = "none";
 }
 
 </script>
